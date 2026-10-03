@@ -165,7 +165,7 @@
     <div class="ver" data-i18n="hero.ver">v0.1.0 · AI Agent Skill</div>
     <h1 data-i18n="hero.h1">Code Trace Plus</h1>
     <div class="sub-en" data-i18n="hero.sub">reads code, not recites answers</div>
-    <p class="tagline" data-i18n="hero.tagline">Turn source-code call chains into a <b>reading script</b> you click through, step by step, in IDEA / VS Code.</p>
+    <p class="tagline" data-i18n="hero.tagline">Legacy code isn't scary — not having a map is. Turn your legacy mountain's call chains into a <b>clickable reading script</b>. Don't guess. Trace.</p>
     <div class="cmd"><span class="d">$</span> <span id="ty1"></span><span id="ty2" style="color:var(--accent)"></span><span class="cur">▌</span></div>
     <div class="install-note" data-i18n="hero.note">Works with Claude Code / Cursor / Codex / Copilot and more</div>
   </div>
@@ -182,6 +182,18 @@
       <div class="card"><h3 data-i18n="feat.c4h">Non-linear ≠ broken chain</h3><p data-i18n="feat.c4p">Timers, callbacks, overrides, thread switches, cross-library hops — all traced as a continuous clickable chain: enqueue → patrol → expiry → <code>task.run(this)</code>, line by line.</p></div>
       <div class="card"><h3 data-i18n="feat.c5h">Loop closure is the finish line</h3><p data-i18n="feat.c5p">When the main line returns to where it started, the trace closes. The ending "one-line summary" diagram shows every thread relay at a glance.</p></div>
       <div class="card"><h3 data-i18n="feat.c6h">Interview-grade QA</h3><p data-i18n="feat.c6p">The main line is filtered by "what would an interviewer actually ask". The script ends with Q&As whose answers cite step numbers and line numbers.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="usecases">
+  <div class="wrap">
+    <h2 data-i18n="uc.h2">Built for the legacy mountain 🏔️</h2>
+    <p class="h2sub" data-i18n="uc.sub">No docs. No survivors. "Don't touch it, it works." Sound familiar?</p>
+    <div class="grid">
+      <div class="card"><h3 data-i18n="uc.c1h">🏔️ Day 1 on a legacy codebase</h3><p data-i18n="uc.c1p">Hand it one entry method — it maps the main line into a numbered script, every hop a real file:line you click in the IDE. Ramp-up: from 3 months to one afternoon.</p></div>
+      <div class="card"><h3 data-i18n="uc.c2h">🎯 Recon before a bugfix</h3><p data-i18n="uc.c2p">Legacy code: change one line, break everything. Trace the chain first — blast radius, thread switches, callback origins, all mapped before you touch a key.</p></div>
+      <div class="card"><h3 data-i18n="uc.c3h">📖 Framework internals, minus the lore</h3><p data-i18n="uc.c3p">Cross-library chains (Redisson watchdog → Netty time wheel) traced to exact line numbers, verifiable with breakpoints. No more reciting interview answers.</p></div>
     </div>
   </div>
 </section>
@@ -300,7 +312,15 @@ const I18N = {
 en: {
   "nav.features":"Features","nav.demo":"Example","nav.how":"How","nav.install":"Install",
   "hero.ver":"v0.1.0 · AI Agent Skill","hero.h1":"Code Trace Plus","hero.sub":"reads code, not recites answers",
-  "hero.tagline":'Turn source-code call chains into a <b>reading script</b> you click through, step by step, in IDEA / VS Code.',
+  "hero.tagline":"Legacy code isn't scary — not having a map is. Turn your legacy mountain's call chains into a <b>clickable reading script</b>. Don't guess. Trace.",
+  "uc.h2":"Built for the legacy mountain 🏔️",
+  "uc.sub":"No docs. No survivors. \"Don't touch it, it works.\" Sound familiar?",
+  "uc.c1h":"🏔️ Day 1 on a legacy codebase",
+  "uc.c1p":"Hand it one entry method — it maps the main line into a numbered script, every hop a real file:line you click in the IDE. Ramp-up: from 3 months to one afternoon.",
+  "uc.c2h":"🎯 Recon before a bugfix",
+  "uc.c2p":"Legacy code: change one line, break everything. Trace the chain first — blast radius, thread switches, callback origins, all mapped before you touch a key.",
+  "uc.c3h":"📖 Framework internals, minus the lore",
+  "uc.c3p":"Cross-library chains (Redisson watchdog → Netty time wheel) traced to exact line numbers, verifiable with breakpoints. No more reciting interview answers.",
   "hero.note":"Works with Claude Code / Cursor / Codex / Copilot and more",
   "feat.h2":'Why a "script", not a "tutorial"',
   "feat.sub":'Ordinary source-code explainers make you memorize lore. Every step of a Code Trace Plus script is an <b>action you physically perform in the IDE</b>.',
@@ -339,7 +359,15 @@ en: {
 zh: {
   "nav.features":"特性","nav.demo":"剧本示例","nav.how":"工作方式","nav.install":"安装",
   "hero.ver":"v0.1.0 · AI Agent Skill","hero.h1":"代码追踪小能手","hero.sub":"reads code, not recites answers",
-  "hero.tagline":'把源码调用链，变成你能在 IDEA / VS Code 里<b>一步步跟着点击</b>的「阅读剧本」。',
+  "hero.tagline":'屎山不可怕，可怕的是没人给你地图。把祖传代码的调用链，变成<b>一步步跟着点击</b>的「阅读剧本」——别猜，追它。',
+  "uc.h2":'为屎山而生 🏔️',
+  "uc.sub":'没文档、没人懂、"能跑别动"——是不是很熟悉？',
+  "uc.c1h":'🏔️ 接手祖传项目 Day 1',
+  "uc.c1p":'给它一个入口方法，它把主干追成编号剧本——每一跳都是能在 IDE 里点击的真实 file:line。ramp-up：从三个月变成一下午。',
+  "uc.c2h":'🎯 改 bug 前的侦察',
+  "uc.c2p":'祖传代码改一行崩一片。动手前先把这条链 trace 一遍——影响面、线程切换、回调来源全在剧本里，再决定改哪里。',
+  "uc.c3h":'📖 读框架源码，不背八股',
+  "uc.c3p":'跨库链路（Redisson 看门狗 → Netty 时间轮）追到具体行号，断点可验证。告别背八股。',
   "hero.note":"兼容 Claude Code / Cursor / Codex / Copilot 等主流 Agent",
   "feat.h2":'为什么是"剧本"，不是"讲解"',
   "feat.sub":'普通源码讲解让你<b>背八股</b>；Code Trace Plus 的每一步都是<b>能在 IDE 里亲手执行的操作</b>。',
@@ -378,7 +406,15 @@ zh: {
 ja: {
   "nav.features":"特徴","nav.demo":"スクリプト例","nav.how":"仕組み","nav.install":"インストール",
   "hero.ver":"v0.1.0 · AI Agent Skill","hero.h1":"コードトレースの達人","hero.sub":"reads code, not recites answers",
-  "hero.tagline":'ソースコールチェーンを、IDEA / VS Code で<b>一歩ずつクリックして追える</b>「リーディングスクリプト」に変えます。',
+  "hero.tagline":'怖いのはレガシーじゃない、地図のないことだ。祖伝コードの呼び出しチェーンを<b>一歩ずつクリックして辿れる</b>スクリプトに——当てずっぽうより、追跡。',
+  "uc.h2":'レガシーの山のために 🏔️',
+  "uc.sub":'ドキュメントなし、詳しい人不在、「触るな、動いてるから」——聞き覚えがありますか？',
+  "uc.c1h":'🏔️ 祖伝プロジェクトの初日',
+  "uc.c1p":'入口メソッドを 1 つ渡せば、主幹を番号付きスクリプトに——全ホップが IDE でクリックできる実在の file:line。ランプアップは 3ヶ月 → 午後ひとつ。',
+  "uc.c2h":'🎯 バグ修正前の偵察',
+  "uc.c2p":'レガシーコードは 1 行直して全体崩壊。着手前にチェーンを trace——影響範囲・スレッド切替・コールバックの由来を全部地図化してから触る。',
+  "uc.c3h":'📖 フレームワーク内部、丸暗記なし',
+  "uc.c3p":'ライブラリ横断チェーン（Redisson ウォッチドッグ → Netty タイムホイール）を行番号まで追跡、ブレークポイントで検証可能。面接の丸暗記にさよなら。',
   "hero.note":"Claude Code / Cursor / Codex / Copilot など主要エージェントに対応",
   "feat.h2":'"解説"ではなく"スクリプト"である理由',
   "feat.sub":'普通のソース解説は暗記を強います。Code Trace Plus の各ステップは<b>IDE で実際に実行できる操作</b>です。',

@@ -8,9 +8,10 @@
 <img width="1511" height="574" alt="image" src="https://github.com/user-attachments/assets/8bb67cc9-0a7c-4133-b098-12393d804572" />
 
 
-**把源码调用链，变成你能在 IDEA / VS Code 里一步步跟着点击的「阅读剧本」。**
+**屎山不可怕，可怕的是没人给你地图。**
+**把祖传代码的调用链，变成你能在 IDEA / VS Code 里一步步跟着点击的「阅读剧本」——别猜，追它。**
 
-一个**追踪真实源码**的 AI Agent Skill——不是背面试八股。给它一个入口（`redissonLock.lock()`）或一个问题（"看门狗怎么续期？"），它沿着**真实**代码库逐跳追踪，写一份 markdown 剧本，每一步都是你在 IDE 里能亲手执行的操作：*它说点哪，你就 ctrl+点击哪。*
+一个**追踪真实源码**的 AI Agent Skill——不是背面试八股，也不是凭印象编讲解。给它一个入口（`redissonLock.lock()`、`orderService.cancel()`、任何你不敢动的方法）或一个问题（"这个屎山到底怎么跑起来的？"），它沿着**真实**代码库逐跳追踪，写一份 markdown 剧本，每一步都是你在 IDE 里能亲手执行的操作：*它说点哪，你就 ctrl+点击哪。*
 
 ## 安装（30 秒）
 
@@ -39,6 +40,14 @@ cp -r skills/codetrace-plus .claude/skills/
 </details>
 
 兼容 Claude Code、Cursor、Codex、GitHub Copilot、Windsurf、Gemini CLI、OpenCode 等 [skills.sh](https://www.skills.sh/) 支持的 Agent。
+
+## 谁最需要它（真实场景）
+
+| 场景 | 一句话 |
+|---|---|
+| 🏔️ **接手祖传项目 Day 1** | 没文档、没人懂、"能跑别动"。给它一个入口方法，它把主干追成编号剧本——哪个类哪一行谁调谁，一路点到闭环。ramp-up 从三个月变成一下午 |
+| 🎯 **改 bug / 重构前的侦察** | 祖传代码改一行崩一片。动手前先把这条链 trace 一遍：影响面、线程切换、回调来源全在剧本里，改哪里、波及哪里一目了然 |
+| 📖 **读框架源码 / 面试备弹** | Redisson 看门狗 → Netty 时间轮这种跨库链路也追到具体行号，断点可验证，告别"背八股" |
 
 ## 为什么需要这个 Skill
 

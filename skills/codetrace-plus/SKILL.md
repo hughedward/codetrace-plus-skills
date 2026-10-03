@@ -1,6 +1,6 @@
 ---
 name: codetrace-plus
-description: Code Trace Plus（代码追踪小能手）——追踪源码调用链，生成一份用户能在 IDEA/VS Code 里一步步跟着点击操作的中文"阅读剧本"（编号 001 起，每跳带真实 file:line，追到闭环为止，结尾给全程一条线总结图）。Use when user says 追代码/追一下调用链/源码追踪/帮我理清源码思路/讲讲 xxx 是怎么实现的/代码追踪/trace the call chain/code trace 等。
+description: Code Trace Plus（代码追踪小能手）——追踪源码调用链，生成一份用户能在 IDEA/VS Code 里一步步跟着点击操作的中文"阅读剧本"（编号 001 起，每跳带真实 file:line，追到闭环为止，结尾给全程一条线总结图）。接手祖传项目/屎山（legacy code）摸清主干、改 bug 前侦察影响面、读框架源码都靠它。Use when user says 追代码/追一下调用链/源码追踪/帮我理清源码思路/讲讲 xxx 是怎么实现的/这个项目怎么跑起来的/帮我读懂这段祖传代码/代码追踪/trace the call chain/legacy code 等。
 ---
 
 # Code Trace Plus（代码追踪小能手）：源码追踪阅读剧本

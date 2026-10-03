@@ -4,6 +4,8 @@
 
 Rules of thumb: it turns "背八股" (recited interview lore) into code you can click in IDEA/VS Code; it numbers key clicks (pNNNN) so you always know who is calling whom; it never invents line numbers — it greps/reads real source, downloading same-version `-sources.jar` when the dependency source isn't local.
 
+Typical use cases: day-one onboarding onto legacy codebases (祖传代码 / 屎山 / spaghetti code), reconnaissance before bugfixes or refactors (blast radius, thread switches, callback origins), and framework-internals study. Pitch in one line: legacy code isn't scary — not having a map is. Don't guess, trace.
+
 README is available in three languages: [English](README.md) (default), [简体中文](README.zh-CN.md), [日本語](README.ja.md). Generated scripts are written in Chinese by design (v0.1.x).
 
 ## Install

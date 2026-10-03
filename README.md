@@ -7,9 +7,10 @@
 **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 <img width="1574" height="575" alt="image" src="https://github.com/user-attachments/assets/2dfc60a9-8f07-4b84-989e-fafdf55e2d26" />
 
-**Turn source-code call chains into "reading scripts" you can click through, step by step, in IDEA / VS Code.**
+**Legacy code isn't scary. Not having a map is.**
+**Turn the call chains inside your legacy mountain into "reading scripts" you click through, step by step, in IDEA / VS Code — don't guess, trace.**
 
-An AI Agent Skill for **tracing real source code** — not reciting interview answers. Give it an entry point (`redissonLock.lock()`) or a question ("how does the watchdog renew the lock?"), it walks the **real** codebase hop by hop, and writes a markdown script where every step is an IDE action you can physically perform: *it says click here, you ctrl+click here.*
+An AI Agent Skill for **tracing real source code** — not reciting interview lore, not hallucinating explanations from memory. Give it an entry point (`redissonLock.lock()`, `orderService.cancel()`, any method you're afraid to touch) or a question ("how does this legacy mountain even work?"), and it walks the **real** codebase hop by hop, writing a markdown script where every step is an IDE action you can physically perform: *it says click here, you ctrl+click here.*
 
 ## Installation (30 seconds)
 
@@ -38,6 +39,14 @@ cp -r skills/codetrace-plus .claude/skills/
 </details>
 
 Works with Claude Code, Cursor, Codex, GitHub Copilot, Windsurf, Gemini CLI, OpenCode and other agents supported by [skills.sh](https://www.skills.sh/).
+
+## Who Needs This (Real Scenarios)
+
+| Scenario | One-liner |
+|---|---|
+| 🏔️ **Day 1 on a legacy codebase** | No docs, no survivors, "don't touch it, it works." Give it one entry method — it maps the main line into a numbered script, every hop a real file:line. Ramp-up: from 3 months to one afternoon |
+| 🎯 **Recon before a bugfix / refactor** | Legacy code: change one line, break everything. Trace the chain first — blast radius, thread switches, callback origins, all mapped before you touch a key |
+| 📖 **Framework internals & interviews** | Cross-library chains (Redisson watchdog → Netty time wheel) traced to exact line numbers, verifiable with breakpoints. No more recited lore |
 
 ## Why This Skill Exists
 
