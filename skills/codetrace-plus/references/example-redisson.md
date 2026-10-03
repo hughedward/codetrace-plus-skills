@@ -280,6 +280,8 @@
                      //   ——就是 p0007（008）那个 new LockTask
 ```
 
+（为什么实现是 LockTask：008 步 `renewLock` 的 :57 `new LockTask(...)`——对象从出生就是 LockTask，execute() 虽写在父类，里面的 `this` 是这个 LockTask；:84 的 `renew(...)` 隐含 `this.`，动态绑定按**运行时类型**找实现。父类把 renew 留成 abstract 是模板方法：公共机械（登记簿/闹钟/回调）在父类，"怎么续"各子类自填——同族还有 ReadLockTask:40、FastMultilockTask:39，分别由 renewReadLock（LockRenewalScheduler.java:44-45）/ renewFastMultiLock（:50-51）创建；你走的是 renewLock 入口，所以是 LockTask。）
+
 #### ↓019、LockTask.java:41 renew → buildChunk：批量切分
 
 ```java
