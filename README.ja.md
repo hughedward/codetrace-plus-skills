@@ -5,6 +5,8 @@
 [![Version](https://img.shields.io/badge/version-0.1.0-58a6ff.svg)](CHANGELOG.md)
 
 [English](README.md) | [简体中文](README.zh-CN.md) | **日本語**
+<img width="1428" height="629" alt="image" src="https://github.com/user-attachments/assets/f0811c89-327c-4e9d-b6db-6c5ff0d89910" />
+
 
 **ソースコードのコールチェーンを、IDEA / VS Code で一歩ずつクリックして追える「リーディングスクリプト」に変えます。**
 
