@@ -1,0 +1,25 @@
+# Code Trace Plus（代码追踪小能手）
+
+> An AI agent skill that traces real source-code call chains and writes a clickable, step-by-step Chinese "reading script" (markdown). Every hop carries a real file:line verified against a pinned dependency version; non-linear jumps (timers, callbacks, overrides, thread switches, cross-library) are traced as continuous clickable chains, never prose-only. Traces end at loop closure with a one-picture ASCII summary and interview-grade Q&A.
+
+Rules of thumb: it turns "背八股" (recited interview lore) into code you can click in IDEA/VS Code; it numbers key clicks (pNNNN) so you always know who is calling whom; it never invents line numbers — it greps/reads real source, downloading same-version `-sources.jar` when the dependency source isn't local.
+
+README is available in three languages: [English](README.md) (default), [简体中文](README.zh-CN.md), [日本語](README.ja.md). Generated scripts are written in Chinese by design (v0.1.x).
+
+## Install
+
+- [README](https://github.com/hughedward/codetrace-plus-skills): full installation (skills CLI + manual), usage, and design rationale
+- Landing page: https://hughedward.github.io/codetrace-plus-skills/
+
+## Skill
+
+- [codetrace-plus](skills/codetrace-plus/SKILL.md): Trace a call chain through real source code and write `trace/<topic>.md`, a numbered (001+), clickable reading script. Use when the user says: 追代码 / 追一下调用链 / 源码追踪 / 帮我理清源码思路 / 讲讲 xxx 是怎么实现的 / trace the call chain.
+
+## Reference
+
+- [Format spec with do/don't examples](skills/codetrace-plus/references/format.md): heading format (`#### ↓NNN、File.java:line desc`), inline click annotations (`// pNNNN：【点击】method 跳转 本文件:152`), non-linear provenance blocks, closing trio (summary diagram / side-quest list / interview QA).
+- [Golden sample: 21-step Redisson watchdog trace](skills/codetrace-plus/references/example-redisson.md): from `redissonLock.lock()` (IndexController.java:42) through the locking Lua, global LockTask registration, Netty HashedWheelTimer enqueue/patrol/expiry (cross-library, Netty 4.2.16.Final sources), renewal Lua, and the `promise.complete → whenComplete → schedule()` loop closure — with 9 interview Q&As.
+
+## Docs
+
+- [Changelog](CHANGELOG.md): v0.1.0 (2026-10-03) — first pinned release.

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Trace Plus — Turn call chains into clickable reading scripts</title>
+<meta name="description" content="AI Agent Skill: traces real source-code call chains and writes a step-by-step, clickable reading script for IDEA / VS Code. Real line numbers, pNNNN back-references, non-linear hops never break the chain. English / 简体中文 / 日本語">
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e;
+    --accent:#3fb950; --accent2:#58a6ff; --warn:#d29922; --pink:#f778ba;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Yu Gothic UI",sans-serif;line-height:1.7}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{font-family:var(--mono);font-size:.9em}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+
+  nav{position:sticky;top:0;background:rgba(13,17,23,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:10}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .logo{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--text);white-space:nowrap}
+  .logo span{color:var(--accent)}
+  nav .right{display:flex;align-items:center;gap:18px}
+  nav ul{display:flex;gap:18px;list-style:none;font-size:14px}
+  nav ul a{color:var(--muted)}
+  nav ul a:hover{color:var(--text);text-decoration:none}
+  .lang{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:12px}
+  .lang button{background:none;border:none;color:var(--muted);padding:4px 10px;cursor:pointer}
+  .lang button.on{background:var(--accent);color:#0d1117;font-weight:700}
+
+  header{padding:88px 0 64px;text-align:center;border-bottom:1px solid var(--border);
+    background:radial-gradient(ellipse 60% 50% at 50% -10%,rgba(63,185,80,.13),transparent)}
+  .ver{display:inline-block;font-family:var(--mono);font-size:12px;color:var(--accent);
+    border:1px solid rgba(63,185,80,.4);border-radius:99px;padding:2px 12px;margin-bottom:22px}
+  h1{font-size:44px;letter-spacing:-.5px;margin-bottom:8px}
+  .sub-en{font-family:var(--mono);color:var(--muted);font-size:16px;margin-bottom:18px}
+  .tagline{font-size:19px;max-width:680px;margin:0 auto 34px}
+  .tagline b{color:var(--accent)}
+  .cmd{display:inline-block;background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+    padding:14px 22px;font-family:var(--mono);font-size:15px}
+  .cmd .d{color:var(--muted)} .cmd .g{color:var(--accent)}
+  .install-note{margin-top:12px;font-size:13px;color:var(--muted)}
+
+  section{padding:64px 0;border-bottom:1px solid var(--border)}
+  h2{font-size:26px;margin-bottom:8px}
+  .h2sub{color:var(--muted);margin-bottom:36px;font-size:15px}
+  .h2sub b{color:var(--warn)}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:22px}
+  .card h3{font-size:15.5px;margin-bottom:8px}
+  .card p{font-size:13.5px;color:var(--muted)}
+  .card code{color:var(--accent);font-size:12.5px}
+
+  .demo{background:#0a0d12;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .demo-bar{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--bg2)}
+  .dot{width:11px;height:11px;border-radius:50%;background:#f85149}
+  .dot:nth-child(2){background:var(--warn)} .dot:nth-child(3){background:var(--accent)}
+  .demo-bar span{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:8px}
+  pre{font-family:var(--mono);font-size:12.5px;line-height:1.75;padding:20px 22px;overflow-x:auto;color:#c9d1d9}
+  .ln{color:var(--muted);user-select:none}
+  .click{color:var(--accent)} .pn{color:var(--pink);font-weight:700} .star{color:var(--warn)}
+  .cmt{color:#6e7681} .kw{color:#ff7b72}
+
+  .flow{margin-top:22px}
+  .flow pre{border:1px dashed var(--border);border-radius:12px;color:#8b949e}
+  .flow b{color:var(--text)}
+  .flow .arrow{color:var(--accent)}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s}
+  .step{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:22px}
+  .step::before{counter-increment:s;content:"0" counter(s);font-family:var(--mono);
+    color:var(--accent);font-weight:700;font-size:13px;display:block;margin-bottom:10px}
+  .step h3{font-size:15px;margin-bottom:6px} .step p{font-size:13.5px;color:var(--muted)}
+
+  .tabs{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .tab-h{display:flex;background:var(--bg2);border-bottom:1px solid var(--border)}
+  .tab-h div{padding:11px 20px;font-size:13.5px;color:var(--muted);border-right:1px solid var(--border)}
+  .tab-h div.on{color:var(--text);background:var(--bg);box-shadow:inset 0 -2px 0 var(--accent)}
+  .tabs pre{border-radius:0}
+
+  footer{padding:44px 0 56px;text-align:center;color:var(--muted);font-size:13.5px}
+  footer .links{margin-bottom:14px;display:flex;gap:26px;justify-content:center;flex-wrap:wrap}
+
+  @media(max-width:760px){
+    h1{font-size:32px} .grid,.steps{grid-template-columns:1fr} nav ul{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">Code Trace <span>Plus</span></div>
+    <div class="right">
+      <ul>
+        <li><a href="#features" data-i18n="nav.features">Features</a></li>
+        <li><a href="#demo" data-i18n="nav.demo">Example</a></li>
+        <li><a href="#how" data-i18n="nav.how">How</a></li>
+        <li><a href="#install" data-i18n="nav.install">Install</a></li>
+        <li><a href="https://github.com/hughedward/codetrace-plus-skills">GitHub</a></li>
+      </ul>
+      <div class="lang">
+        <button data-lang="en" class="on">EN</button>
+        <button data-lang="zh">中文</button>
+        <button data-lang="ja">日本語</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <div class="ver" data-i18n="hero.ver">v0.1.0 · AI Agent Skill</div>
+    <h1 data-i18n="hero.h1">Code Trace Plus</h1>
+    <div class="sub-en" data-i18n="hero.sub">reads code, not recites answers</div>
+    <p class="tagline" data-i18n="hero.tagline">Turn source-code call chains into a <b>reading script</b> you click through, step by step, in IDEA / VS Code.</p>
+    <div class="cmd"><span class="d">$</span> npx skills add <span class="g">hughedward/codetrace-plus-skills</span></div>
+    <div class="install-note" data-i18n="hero.note">Works with Claude Code / Cursor / Codex / Copilot and more</div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <h2 data-i18n="feat.h2">Why a "script", not a "tutorial"</h2>
+    <p class="h2sub" data-i18n="feat.sub">Ordinary source-code explainers make you memorize lore. Every step of a Code Trace Plus script is an <b>action you physically perform in the IDE</b>.</p>
+    <div class="grid">
+      <div class="card"><h3 data-i18n="feat.c1h">Real line numbers, never invented</h3><p data-i18n="feat.c1p">Every hop comes from grep / read of real source against a pinned dependency version — each one ctrl+click-verifiable in IDEA. Even dependency libraries (Netty) are read from same-version sources.</p></div>
+      <div class="card"><h3 data-i18n="feat.c2h">Jumps as inline comments</h3><p data-i18n="feat.c2p">The next hop sits right next to the code: <code>// 【click】tryAcquire → this file:152</code>. Just follow along. Zero filler for linear calls.</p></div>
+      <div class="card"><h3 data-i18n="feat.c3h">pNNNN precise back-references</h3><p data-i18n="feat.c3p">Key clicks are numbered (p0009); later steps point back to "which line this <code>this</code> came from" — the cure for losing track of who calls whom.</p></div>
+      <div class="card"><h3 data-i18n="feat.c4h">Non-linear ≠ broken chain</h3><p data-i18n="feat.c4p">Timers, callbacks, overrides, thread switches, cross-library hops — all traced as a continuous clickable chain: enqueue → patrol → expiry → <code>task.run(this)</code>, line by line.</p></div>
+      <div class="card"><h3 data-i18n="feat.c5h">Loop closure is the finish line</h3><p data-i18n="feat.c5p">When the main line returns to where it started, the trace closes. The ending "one-line summary" diagram shows every thread relay at a glance.</p></div>
+      <div class="card"><h3 data-i18n="feat.c6h">Interview-grade QA</h3><p data-i18n="feat.c6p">The main line is filtered by "what would an interviewer actually ask". The script ends with Q&As whose answers cite step numbers and line numbers.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <h2 data-i18n="demo.h2">What a script looks like</h2>
+    <p class="h2sub" data-i18n="demo.sub">Excerpt from the built-in golden sample: from <b>redissonLock.lock()</b> into the Netty time wheel and back — 21 steps to loop closure. This is the crucial cross-library, non-linear hop:</p>
+    <div class="demo">
+      <div class="demo-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>trace/redisson-lock-renewal.md</span></div>
+<pre><span class="cmt">#### ↓016、HashedWheelTimer.java:698 —— </span><span class="cmt" data-i18n="demo.c0">the line where we jump back from Netty into Redisson</span>
+
+<span class="ln">698:</span>     <span class="kw">public void</span> expire() {
+<span class="ln">705:</span>         timer.taskExecutor.<span class="kw">execute</span>(<span class="kw">this</span>);
+<span class="ln">   </span>         <span class="cmt" data-i18n="demo.c1">// ↑ not calling task directly! hands `this` to taskExecutor, which runs it on the same thread</span>
+<span class="ln">715:</span>     <span class="kw">public void</span> run() {
+<span class="ln">717:</span>             task.<span class="kw">run</span>(<span class="kw">this</span>);   <span class="pn">p0013</span><span class="cmt" data-i18n="demo.c2">: ★ task is the LockTask passed out at </span><span class="pn">p0009 (011)</span>
+<span class="ln">   </span>                             <span class="click" data-i18n="demo.c3">【click】task.run → ctrl+alt+B → RenewalTask.java:170</span>
+
+<span class="cmt" data-i18n="demo.c4">Proof: breakpoint at :170 fires within 10s of locking — thread name = redisson-timer-1-1</span></pre>
+    </div>
+    <div class="flow">
+<pre><b data-i18n="flow.you">Your thread:</b> 001 lock() → 005/006 Lua lock → 010 register → 011 newTimeout(this,10s) <span class="arrow">─┐</span> <span data-i18n="flow.back">return to business</span>
+                                                                  <span class="arrow">│</span> 10s
+<b>redisson-timer-1-1:</b> 013 enqueue → 014 patrol → 016 task.run(this) <span class="arrow">┌─────────┘</span>
+        → 017 run() → 020 Lua renew(hexists+pexpire 30s) <span class="arrow">─┐</span>
+                                        <span class="arrow">│</span> <span data-i18n="flow.redis">Redis replies</span>
+<b>redisson-netty:</b> 021 complete → whenComplete → schedule() <span class="arrow">┌───┘</span>
+        <span class="arrow">▲</span>   <span data-i18n="flow.loop">every 10s, until unlock stops the clock</span>   <span class="arrow">│</span>
+        <span class="arrow">└──────────────────────────────────────┘</span></pre>
+    </div>
+    <p class="h2sub" style="margin-top:18px" data-i18n="demo.more">→ Full sample: skills/codetrace-plus/references/example-redisson.md in the repo (21 steps + 9 Q&amp;As; scripts are written in Chinese — the skill's native output).</p>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <h2 data-i18n="how.h2">How it works</h2>
+    <p class="h2sub" data-i18n="how.sub">You provide an entry point or a question. It does the rest.</p>
+    <div class="steps">
+      <div class="step"><h3 data-i18n="how.s1h">Give an entry</h3><p data-i18n="how.s1p">"Trace redissonLock.lock(), entry at IndexController.java:42" — or simply ask "how does the watchdog renew the lock?".</p></div>
+      <div class="step"><h3 data-i18n="how.s2h">It verifies hop by hop</h3><p data-i18n="how.s2p">grep / read real source; snippets with real line numbers each hop. If source isn't local, it fetches the same-version -sources.jar. Never writes from memory.</p></div>
+      <div class="step"><h3 data-i18n="how.s3h">You click along</h3><p data-i18n="how.s3p">It writes trace/&lt;topic&gt;.md. Open it in a split view and ctrl+click wherever it says, until the loop closes.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <h2 data-i18n="inst.h2">Install</h2>
+    <p class="h2sub" data-i18n="inst.sub">Pick one of three ways. The skill folder must stay named <code>codetrace-plus</code>.</p>
+    <div class="tabs">
+      <div class="tab-h"><div class="on" data-i18n="inst.t1">skills CLI</div><div data-i18n="inst.t2">Manual · global</div><div data-i18n="inst.t3">Manual · project</div></div>
+<pre><span class="cmt" data-i18n="inst.c1"># recommended: one command once the repo is public</span>
+<span class="d" style="color:var(--muted)">$</span> npx skills add <span class="click">hughedward/codetrace-plus-skills</span>
+
+<span class="cmt" data-i18n="inst.c2"># or install globally (available in all projects)</span>
+<span class="d" style="color:var(--muted)">$</span> mkdir -p ~/.claude/skills
+<span class="d" style="color:var(--muted)">$</span> cp -r skills/codetrace-plus ~/.claude/skills/
+
+<span class="cmt" data-i18n="inst.c3"># or install into a single project</span>
+<span class="d" style="color:var(--muted)">$</span> mkdir -p .claude/skills
+<span class="d" style="color:var(--muted)">$</span> cp -r skills/codetrace-plus .claude/skills/</pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="https://github.com/hughedward/codetrace-plus-skills">GitHub</a>
+      <a href="https://www.skills.sh/">skills.sh</a>
+      <a href="https://github.com/hughedward/codetrace-plus-skills/blob/main/skills/codetrace-plus/references/example-redisson.md" data-i18n="foot.sample">Full sample (21 steps)</a>
+    </div>
+    <div data-i18n="foot.line">MIT License · Code Trace Plus v0.1.0 · golden sample based on Redisson 4.7.0 + Netty 4.2.16.Final</div>
+  </div>
+</footer>
+
+<script>
+const I18N = {
+en: {
+  "nav.features":"Features","nav.demo":"Example","nav.how":"How","nav.install":"Install",
+  "hero.ver":"v0.1.0 · AI Agent Skill","hero.h1":"Code Trace Plus","hero.sub":"reads code, not recites answers",
+  "hero.tagline":'Turn source-code call chains into a <b>reading script</b> you click through, step by step, in IDEA / VS Code.',
+  "hero.note":"Works with Claude Code / Cursor / Codex / Copilot and more",
+  "feat.h2":'Why a "script", not a "tutorial"',
+  "feat.sub":'Ordinary source-code explainers make you memorize lore. Every step of a Code Trace Plus script is an <b>action you physically perform in the IDE</b>.',
+  "feat.c1h":"Real line numbers, never invented","feat.c1p":"Every hop comes from grep / read of real source against a pinned dependency version — each one ctrl+click-verifiable in IDEA. Even dependency libraries (Netty) are read from same-version sources.",
+  "feat.c2h":"Jumps as inline comments","feat.c2p":'The next hop sits right next to the code: <code>// 【click】tryAcquire → this file:152</code>. Just follow along. Zero filler for linear calls.',
+  "feat.c3h":"pNNNN precise back-references","feat.c3p":'Key clicks are numbered (p0009); later steps point back to "which line this <code>this</code> came from" — the cure for losing track of who calls whom.',
+  "feat.c4h":"Non-linear ≠ broken chain","feat.c4p":"Timers, callbacks, overrides, thread switches, cross-library hops — all traced as a continuous clickable chain: enqueue → patrol → expiry → <code>task.run(this)</code>, line by line.",
+  "feat.c5h":"Loop closure is the finish line","feat.c5p":'When the main line returns to where it started, the trace closes. The ending "one-line summary" diagram shows every thread relay at a glance.',
+  "feat.c6h":"Interview-grade QA","feat.c6p":'The main line is filtered by "what would an interviewer actually ask". The script ends with Q&As whose answers cite step numbers and line numbers.',
+  "demo.h2":"What a script looks like",
+  "demo.sub":"Excerpt from the built-in golden sample: from <b>redissonLock.lock()</b> into the Netty time wheel and back — 21 steps to loop closure. This is the crucial cross-library, non-linear hop:",
+  "demo.c0":"the line where we jump back from Netty into Redisson",
+  "demo.c1":"// ↑ not calling task directly! hands `this` to taskExecutor, which runs it on the same thread",
+  "demo.c2":": ★ task is the LockTask passed out at ",
+  "demo.c3":"【click】task.run → ctrl+alt+B → RenewalTask.java:170",
+  "demo.c4":"Proof: breakpoint at :170 fires within 10s of locking — thread name = redisson-timer-1-1",
+  "flow.you":"Your thread:","flow.back":"return to business","flow.redis":"Redis replies","flow.loop":"every 10s, until unlock stops the clock",
+  "demo.more":'→ Full sample: skills/codetrace-plus/references/example-redisson.md in the repo (21 steps + 9 Q&amp;As; scripts are written in Chinese — the skill\'s native output).',
+  "how.h2":"How it works","how.sub":"You provide an entry point or a question. It does the rest.",
+  "how.s1h":"Give an entry","how.s1p":'"Trace redissonLock.lock(), entry at IndexController.java:42" — or simply ask "how does the watchdog renew the lock?".',
+  "how.s2h":"It verifies hop by hop","how.s2p":"grep / read real source; snippets with real line numbers each hop. If source isn't local, it fetches the same-version -sources.jar. Never writes from memory.",
+  "how.s3h":"You click along","how.s3p":"It writes trace/&lt;topic&gt;.md. Open it in a split view and ctrl+click wherever it says, until the loop closes.",
+  "inst.h2":"Install","inst.sub":"Pick one of three ways. The skill folder must stay named <code>codetrace-plus</code>.",
+  "inst.t1":"skills CLI","inst.t2":"Manual · global","inst.t3":"Manual · project",
+  "inst.c1":"# recommended: one command once the repo is public",
+  "inst.c2":"# or install globally (available in all projects)",
+  "inst.c3":"# or install into a single project",
+  "foot.sample":"Full sample (21 steps)",
+  "foot.line":"MIT License · Code Trace Plus v0.1.0 · golden sample based on Redisson 4.7.0 + Netty 4.2.16.Final"
+},
+zh: {
+  "nav.features":"特性","nav.demo":"剧本示例","nav.how":"工作方式","nav.install":"安装",
+  "hero.ver":"v0.1.0 · AI Agent Skill","hero.h1":"代码追踪小能手","hero.sub":"reads code, not recites answers",
+  "hero.tagline":'把源码调用链，变成你能在 IDEA / VS Code 里<b>一步步跟着点击</b>的「阅读剧本」。',
+  "hero.note":"兼容 Claude Code / Cursor / Codex / Copilot 等主流 Agent",
+  "feat.h2":'为什么是"剧本"，不是"讲解"',
+  "feat.sub":'普通源码讲解让你<b>背八股</b>；Code Trace Plus 的每一步都是<b>能在 IDE 里亲手执行的操作</b>。',
+  "feat.c1h":"真实行号，绝不编造","feat.c1p":"每一跳都来自对真实源码的 grep / read，并与锁定的依赖版本核对，IDEA ctrl+点击逐一可验证；追进 Netty 这类依赖也用同版本 sources。",
+  "feat.c2h":"跳转即行内注释","feat.c2p":'下一步写在代码旁边：<code>// 【点击】tryAcquire 跳转 本文件:152</code>，跟着点就是。线性调用零废话。',
+  "feat.c3h":"pNNNN 精确回指","feat.c3p":'关键点击带编号（p0009），跨步骤回指"这个 this 是哪一行传出去的"——专治追久了忘了谁在调谁。',
+  "feat.c4h":"非线性 ≠ 断链","feat.c4p":"定时器、回调、重写、换线程、跨库，同样追成连续可点击的链：入队 → 巡检 → 到期 → <code>task.run(this)</code>，逐行落实。",
+  "feat.c5h":"闭环即终点","feat.c5p":'主线回到起点即标注闭环收工，结尾"全程一条线总结"图让多线程接力一目了然。',
+  "feat.c6h":"面试视角 QA","feat.c6p":'主线筛子 = 面试官会问什么；收尾附问答，答案回引步骤编号与行号。',
+  "demo.h2":"剧本长什么样",
+  "demo.sub":"节选自内置 golden sample：从 <b>redissonLock.lock()</b> 追到 Netty 时间轮再回到 Redisson，21 步闭环。这是全剧最关键的跨库非线性一跳：",
+  "demo.c0":"从 Netty 跳回 Redisson 的那一行",
+  "demo.c1":"// ↑ 不是直接调 task！是把 this 交给 taskExecutor，默认同线程直接 run",
+  "demo.c2":"：★ task 就是 ",
+  "demo.c3":"【点击】task.run → ctrl+alt+B → RenewalTask.java:170",
+  "demo.c4":"验证：在 :170 打断点，加锁后 10 秒内必停，线程名 = redisson-timer-1-1",
+  "flow.you":"你的线程：","flow.back":"返回扣库存","flow.redis":"Redis 响应","flow.loop":"每 10 秒循环，直到 unlock 停表",
+  "demo.more":'→ 完整示例见仓库 skills/codetrace-plus/references/example-redisson.md（21 步 + 9 条 QA）',
+  "how.h2":"工作方式","how.sub":"你只需要给一个入口或一个问题，剩下的它来。",
+  "how.s1h":'给入口','how.s1p':'"帮我追一下 redissonLock.lock() 的调用链，入口在 IndexController.java:42"——或者只问"看门狗怎么续期"。',
+  "how.s2h":"它逐跳验证","how.s2p":"grep / read 真实源码，逐跳摘片段、标注行号；源码不在本地就自动取同版本 -sources.jar，绝不凭记忆编写。",
+  "how.s3h":"你跟着点击","how.s3p":"生成 trace/&lt;主题&gt;.md 剧本。打开它，在 IDEA 里它说点哪就点哪，追到闭环为止。",
+  "inst.h2":"安装","inst.sub":"三种方式任选，skill 目录名保持 <code>codetrace-plus</code>。",
+  "inst.t1":"skills CLI","inst.t2":"手动 · 全局","inst.t3":"手动 · 单项目",
+  "inst.c1":"# 推荐：一条命令安装",
+  "inst.c2":"# 或安装到全局（所有项目可用）",
+  "inst.c3":"# 或只装到当前项目",
+  "foot.sample":"完整示例（21 步）",
+  "foot.line":"MIT License · Code Trace Plus（代码追踪小能手）v0.1.0 · golden sample 基于 Redisson 4.7.0 + Netty 4.2.16.Final"
+},
+ja: {
+  "nav.features":"特徴","nav.demo":"スクリプト例","nav.how":"仕組み","nav.install":"インストール",
+  "hero.ver":"v0.1.0 · AI Agent Skill","hero.h1":"コードトレースの達人","hero.sub":"reads code, not recites answers",
+  "hero.tagline":'ソースコールチェーンを、IDEA / VS Code で<b>一歩ずつクリックして追える</b>「リーディングスクリプト」に変えます。',
+  "hero.note":"Claude Code / Cursor / Codex / Copilot など主要エージェントに対応",
+  "feat.h2":'"解説"ではなく"スクリプト"である理由',
+  "feat.sub":'普通のソース解説は暗記を強います。Code Trace Plus の各ステップは<b>IDE で実際に実行できる操作</b>です。',
+  "feat.c1h":"本物の行番号、捏造なし","feat.c1p":"すべてのホップは実ソースの grep / read 由来で、依存バージョンを固定して検証。IDEA で ctrl+クリック検証可能。Netty 等のライブラリも同バージョン sources で読みます。",
+  "feat.c2h":"ジャンプはインラインコメント","feat.c2p":'次のホップはコードのすぐ横：<code>// 【クリック】tryAcquire → このファイル:152</code>。そのまま辿るだけ。線形呼び出しに無駄話なし。',
+  "feat.c3h":"pNNNN 正確な逆参照","feat.c3p":'重要クリックに番号（p0009）を付け、後のステップから「この <code>this</code> がどの行から来たか」を正確に参照——誰が誰を呼ぶか分からなくなる問題の特効薬。',
+  "feat.c4h":"非線形 ≠ 切断","feat.c4p":"タイマー、コールバック、オーバーライド、スレッド切替、ライブラリ横断も、入队 → 巡回 → 期限切れ → <code>task.run(this)</code> まで行ごとに連続したクリック可能なチェーンとして追跡。",
+  "feat.c5h":"ループ閉包がゴール","feat.c5p":'主线が起点に戻ったら追跡終了。末尾の"一行サマリー"図がマルチスレッドリレーを一望できます。',
+  "feat.c6h":"面接グレードの QA","feat.c6p":'主线のフィルタは"面接官が実際に聞くこと"。末尾の Q&A の答えはステップ番号と行番号を引用します。',
+  "demo.h2":"スクリプトの見た目",
+  "demo.sub":"内蔵 golden sample より：<b>redissonLock.lock()</b> から Netty タイムホイールへ、そして戻る——21 ステップのループ閉包。重要なライブラリ横断・非線形ホップの場面です：",
+  "demo.c0":"Netty から Redisson に戻る一行",
+  "demo.c1":"// ↑ task を直接呼ばない！this を taskExecutor に渡し、同一スレッドで実行",
+  "demo.c2":"：★ task は ",
+  "demo.c3":"【クリック】task.run → ctrl+alt+B → RenewalTask.java:170",
+  "demo.c4":"検証：:170 にブレークポイントを置くとロック後 10 秒以内に停止、スレッド名 = redisson-timer-1-1",
+  "flow.you":"あなたのスレッド：","flow.back":"業務に戻る","flow.redis":"Redis 応答","flow.loop":"10 秒ごとにループ、unlock で停止",
+  "demo.more":'→ 完全版：リポジトリ内 skills/codetrace-plus/references/example-redisson.md（21 ステップ + Q&A 9 問。スクリプトは中国語で出力されます）',
+  "how.h2":"仕組み","how.sub":"エントリポイントか質問を渡すだけ。あとは任せて。",
+  "how.s1h":"入口を渡す","how.s1p":'"redissonLock.lock() を追跡、入口は IndexController.java:42"——または「ウォッチドッグはどう更新するの？」と聞くだけ。',
+  "how.s2h":"ホップごとに検証","how.s2p":"実ソースを grep / read し、各ホップで実行番号付きスニペット。ソースがローカルになければ同バージョンの -sources.jar を取得。記憶から書くことはありません。",
+  "how.s3h":"クリックで追う","how.s3p":"trace/&lt;topic&gt;.md を生成。開いて、言われた場所を ctrl+クリック——ループが閉じるまで。",
+  "inst.h2":"インストール","inst.sub":"3 つの方法のいずれかを。skill フォルダ名は <code>codetrace-plus</code> のまま。",
+  "inst.t1":"skills CLI","inst.t2":"手動 · グローバル","inst.t3":"手動 · プロジェクト",
+  "inst.c1":"# 推奨：コマンド一発でインストール",
+  "inst.c2":"# またはグローバルにインストール（全プロジェクトで利用可能）",
+  "inst.c3":"# または単一プロジェクトにインストール",
+  "foot.sample":"完全版サンプル（21 ステップ）",
+  "foot.line":"MIT License · Code Trace Plus v0.1.0 · golden sample は Redisson 4.7.0 + Netty 4.2.16.Final ベース"
+}
+};
+function setLang(l){
+  document.documentElement.lang = l==='zh'?'zh-CN':'ja'===l?'ja':'en';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k = el.getAttribute('data-i18n');
+    if(I18N[l][k] !== undefined) el.innerHTML = I18N[l][k];
+  });
+  document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on', b.dataset.lang===l));
+  try{ localStorage.setItem('ctp-lang', l); }catch(e){}
+}
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+let saved='en'; try{ saved = localStorage.getItem('ctp-lang')||'en'; }catch(e){}
+setLang(saved);
+</script>
+
+</body>
+</html>
