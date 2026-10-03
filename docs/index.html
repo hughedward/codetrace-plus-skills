@@ -103,7 +103,7 @@
   #toast.show{opacity:1;transform:none}
 
   /* ---- patrol cat ---- */
-  #cat{position:fixed;width:48px;height:38px;z-index:90;pointer-events:none;left:0;top:0;will-change:transform}
+  #cat{position:fixed;width:48px;height:38px;z-index:90;pointer-events:none;left:0;top:0;will-change:transform;transform:translate(70vw,55vh)}
   .cat-flip{width:100%;height:100%;transition:transform .15s}
   #cat.flip .cat-flip{transform:scaleX(-1)}
   #cat .cat-body{pointer-events:auto;cursor:pointer;width:100%;height:100%;position:relative}
@@ -264,6 +264,36 @@
     <div data-i18n="foot.line">MIT License · Code Trace Plus v0.1.0 · golden sample based on Redisson 4.7.0 + Netty 4.2.16.Final</div>
   </div>
 </footer>
+
+<div id="toast"></div>
+
+<div id="toast"></div>
+
+<div id="cat" aria-hidden="true" title="patrol cat #001">
+  <div class="critter-say" id="catSay"></div>
+  <div class="cat-em" id="catEm"></div>
+  <div class="cat-flip">
+    <div class="cat-body" id="catBody">
+      <svg viewBox="0 0 48 36" width="100%" height="100%">
+        <path class="cat-tail" d="M9 21 C1 19 0 9 7 5" fill="none" stroke="#f0883e" stroke-width="3.4" stroke-linecap="round"/>
+        <rect class="leg" x="11" y="25" width="4" height="10" rx="1.8" fill="#f0883e"/>
+        <rect class="leg" x="17" y="25" width="4" height="10" rx="1.8" fill="#f0883e"/>
+        <rect class="leg" x="26" y="25" width="4" height="10" rx="1.8" fill="#f0883e"/>
+        <rect class="leg" x="32" y="25" width="4" height="10" rx="1.8" fill="#f0883e"/>
+        <rect x="8" y="14" width="26" height="13" rx="6" fill="#f0883e"/>
+        <rect x="15" y="15" width="2.6" height="11" fill="#d2691e" opacity=".55"/>
+        <rect x="22" y="15" width="2.6" height="11" fill="#d2691e" opacity=".55"/>
+        <rect x="29" y="15" width="2.6" height="11" fill="#d2691e" opacity=".55"/>
+        <path d="M34 7 L35 1 L40 6 Z" fill="#f0883e"/>
+        <path d="M44 6 L47 1 L41 4 Z" fill="#f0883e"/>
+        <rect x="32" y="4" width="15" height="14" rx="5" fill="#f0883e"/>
+        <rect x="36.4" y="10" width="2.2" height="2.8" fill="#39d353"/>
+        <rect x="42.4" y="10" width="2.2" height="2.8" fill="#39d353"/>
+        <rect x="40.2" y="14" width="1.8" height="1.5" fill="#f778ba"/>
+      </svg>
+    </div>
+  </div>
+</div>
 
 <script>
 const I18N = {
@@ -439,14 +469,14 @@ document.querySelectorAll('.pn').forEach(p=>p.addEventListener('click',()=>showT
 console.log('%c Code Trace Plus ','background:#3fb950;color:#0d1117;font-weight:bold;font-size:15px;padding:4px 8px;border-radius:4px');
 console.log("you opened the console. RESPECT 👏  we trace code so you don't have to memorize it.");
 console.log('%cnpx skills add hughedward/codetrace-plus-skills','color:#58a6ff;font-size:13px');
-
 /* ---- patrol cat ---- */
 (function(){
   const cat  = document.getElementById('cat');
   const body = document.getElementById('catBody');
   const say  = document.getElementById('catSay');
   const em   = document.getElementById('catEm');
-  if(!cat) return;
+  if(!cat){ console.warn('patrol cat: element not found'); return; }
+  console.log('patrol cat deployed 🐾');
 
   let x = innerWidth*0.7, y = innerHeight*0.55;    // cat center (viewport)
   let facing = 1;                                  // 1 = right, -1 = left
@@ -574,34 +604,6 @@ console.log('%cnpx skills add hughedward/codetrace-plus-skills','color:#58a6ff;f
 let saved='en'; try{ saved = localStorage.getItem('ctp-lang')||'en'; }catch(e){}
 setLang(saved);
 </script>
-
-<div id="toast"></div>
-
-<div id="cat" aria-hidden="true" title="patrol cat #001">
-  <div class="critter-say" id="catSay"></div>
-  <div class="cat-em" id="catEm"></div>
-  <div class="cat-flip">
-    <div class="cat-body" id="catBody">
-      <svg viewBox="0 0 48 36" width="100%" height="100%">
-        <path class="cat-tail" d="M9 21 C1 19 0 9 7 5" fill="none" stroke="#f0883e" stroke-width="3.4" stroke-linecap="round"/>
-        <rect class="leg" x="11" y="25" width="4" height="10" rx="1.8" fill="#f0883e"/>
-        <rect class="leg" x="17" y="25" width="4" height="10" rx="1.8" fill="#f0883e"/>
-        <rect class="leg" x="26" y="25" width="4" height="10" rx="1.8" fill="#f0883e"/>
-        <rect class="leg" x="32" y="25" width="4" height="10" rx="1.8" fill="#f0883e"/>
-        <rect x="8" y="14" width="26" height="13" rx="6" fill="#f0883e"/>
-        <rect x="15" y="15" width="2.6" height="11" fill="#d2691e" opacity=".55"/>
-        <rect x="22" y="15" width="2.6" height="11" fill="#d2691e" opacity=".55"/>
-        <rect x="29" y="15" width="2.6" height="11" fill="#d2691e" opacity=".55"/>
-        <path d="M34 7 L35 1 L40 6 Z" fill="#f0883e"/>
-        <path d="M44 6 L47 1 L41 4 Z" fill="#f0883e"/>
-        <rect x="32" y="4" width="15" height="14" rx="5" fill="#f0883e"/>
-        <rect x="36.4" y="10" width="2.2" height="2.8" fill="#39d353"/>
-        <rect x="42.4" y="10" width="2.2" height="2.8" fill="#39d353"/>
-        <rect x="40.2" y="14" width="1.8" height="1.5" fill="#f778ba"/>
-      </svg>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
