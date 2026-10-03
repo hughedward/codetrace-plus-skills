@@ -102,6 +102,22 @@
     opacity:0;transform:translateY(12px);transition:.3s;pointer-events:none;z-index:99}
   #toast.show{opacity:1;transform:none}
 
+  /* ---- patrol tank ---- */
+  #tank{position:fixed;width:40px;height:40px;z-index:90;pointer-events:none;left:0;top:0;will-change:transform}
+  #tank .tank-body{pointer-events:auto;cursor:pointer;width:100%;height:100%;position:relative}
+  #tank.moving .tank-body{animation:rumble .12s linear infinite}
+  @keyframes rumble{0%{transform:translate(0,0)}25%{transform:translate(.7px,-.4px)}50%{transform:translate(-.5px,.6px)}75%{transform:translate(.5px,.4px)}100%{transform:translate(0,0)}}
+  #tank .tank-body.hop{animation:hop .45s ease}
+  @keyframes hop{30%{transform:translateY(-9px)}60%{transform:translateY(0)}80%{transform:translateY(-3px)}100%{transform:translateY(0)}}
+  .tank-say{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) scale(.7);opacity:0;
+    background:#0a0d12;border:1px solid var(--accent);border-radius:9px;padding:5px 10px;font-size:12px;
+    white-space:nowrap;transition:.25s;pointer-events:none}
+  .tank-say.on{opacity:1;transform:translateX(-50%) scale(1)}
+  .tank-say::after{content:"";position:absolute;top:100%;left:50%;margin-left:-5px;border:5px solid transparent;border-top-color:var(--accent)}
+  .tank-shell{position:fixed;width:5px;height:5px;background:#ffd33d;box-shadow:0 0 6px #ffd33d;z-index:89;pointer-events:none}
+  .tank-boom{position:fixed;font-size:15px;color:#ffd33d;z-index:89;pointer-events:none;animation:boom .55s ease-out forwards;text-shadow:0 0 8px #ffd33d}
+  @keyframes boom{0%{transform:scale(.3) rotate(0deg);opacity:1}100%{transform:scale(1.8) rotate(20deg);opacity:0}}
+
   /* relay theater */
   .relay{margin-top:40px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:26px 22px 18px}
   .relay h3{font-size:16px;margin-bottom:4px}
@@ -328,7 +344,8 @@ en: {
   "relay.l2":"📡 renewal done, complete() received — next alarm's on me ⏭️",
   "relay.l3":"wait, ME again?? — yes. that's the loop 😂",
   "relay.done":"✓ loop closed — every 10s, until unlock stops the clock",
-  "relay.pass":"pass {n} / ∞"
+  "relay.pass":"pass {n} / ∞",
+  "tank.q":["make way — patrolling the call chain 🧭","don't poke me! shells aren't free 💣","where's the bug? take me there 🎯","the watchdog sent me. vroom vroom. 🛡️","has the loop closed? then go play 😤"]
 },
 zh: {
   "nav.features":"特性","nav.demo":"剧本示例","nav.how":"工作方式","nav.install":"安装",
@@ -374,7 +391,8 @@ zh: {
   "relay.l2":"📡 续期完成收到 complete，下一个闹钟我包了 ⏭️",
   "relay.l3":"等等，怎么又轮到我？？——对，这就是闭环 😂",
   "relay.done":"✓ loop closed —— 每 10 秒一轮，直到 unlock 停表",
-  "relay.pass":"第 {n} 圈 / ∞"
+  "relay.pass":"第 {n} 圈 / ∞",
+  "tank.q":["让让，我在巡逻调用链 🧭","别点我！炮弹很贵的 💣","bug 在哪？带我去 🎯","我是看门狗派来的坦克，突突突 🛡️","loop 闭环了吗就搁这玩 😤"]
 },
 ja: {
   "nav.features":"特徴","nav.demo":"スクリプト例","nav.how":"仕組み","nav.install":"インストール",
@@ -420,7 +438,8 @@ ja: {
   "relay.l2":"📡 更新完了、complete() 受信。次のアラームは任せろ ⏭️",
   "relay.l3":"え、また私？？——そう、それがループ 😂",
   "relay.done":"✓ loop closed ——10秒ごとに一周、unlock で停止",
-  "relay.pass":"{n} 周目 / ∞"
+  "relay.pass":"{n} 周目 / ∞",
+  "tank.q":["どいて——コールチェーン巡回中 🧭","つつかないで！砲弾はタダじゃない 💣","バグはどこ？案内して 🎯","ウォッチドッグから来た戦車だ。ヴルヴル 🛡️","ループ閉じたの？なら遊んでいい 😤"]
 }
 };
 let LANG='en';
@@ -502,11 +521,124 @@ console.log('%c Code Trace Plus ','background:#3fb950;color:#0d1117;font-weight:
 console.log("you opened the console. RESPECT 👏  we trace code so you don't have to memorize it.");
 console.log('%cnpx skills add hughedward/codetrace-plus-skills','color:#58a6ff;font-size:13px');
 
+/* ---- patrol tank ---- */
+(function(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const tank = document.getElementById('tank');
+  const body = document.getElementById('tankBody');
+  const say  = document.getElementById('tankSay');
+  if(!tank) return;
+
+  let x = innerWidth*0.72, y = innerHeight*0.62;   // tank center (viewport coords)
+  let angle = 0;                                    // 0 = facing up
+  let tgt = pickTarget(); let phase = 'idle'; let wait = 1200;
+  let speed = 46, boost = 1, last = performance.now(), sayTimer;
+
+  function pickTarget(){
+    return { x: 30 + Math.random()*(innerWidth-60),
+             y: 90 + Math.random()*(innerHeight-140) };
+  }
+  function sayIt(txt){
+    say.textContent = txt; say.classList.add('on');
+    clearTimeout(sayTimer);
+    sayTimer = setTimeout(()=>say.classList.remove('on'), 2600);
+  }
+  function fire(deg){
+    const r = deg*Math.PI/180;
+    const dx = Math.sin(r), dy = -Math.cos(r);   // facing vector for 0=up
+    let sx = x + dx*24, sy = y + dy*24;
+    const shell = document.createElement('div');
+    shell.className = 'tank-shell';
+    shell.style.left = sx+'px'; shell.style.top = sy+'px';
+    document.body.appendChild(shell);
+    (function fly(){
+      sx += dx*9; sy += dy*9;
+      shell.style.left = sx+'px'; shell.style.top = sy+'px';
+      if(sx<-10||sx>innerWidth+10||sy<-10||sy>innerHeight+10){
+        shell.remove(); boom(sx,sy);
+      } else { requestAnimationFrame(fly); }
+    })();
+  }
+  function boom(bx,by){
+    const b = document.createElement('div');
+    b.className='tank-boom'; b.textContent='✷';
+    b.style.left=(bx-8)+'px'; b.style.top=(by-8)+'px';
+    document.body.appendChild(b);
+    setTimeout(()=>b.remove(), 600);
+  }
+  function tick(now){
+    const dt = Math.min(40, now-last); last = now;
+    if(phase==='idle'){
+      wait -= dt;
+      if(wait<=0){ tgt = pickTarget(); phase='move'; tank.classList.add('moving'); }
+    } else {
+      const dx = tgt.x-x, dy = tgt.y-y, dist = Math.hypot(dx,dy);
+      const want = Math.atan2(dy,dx)*180/Math.PI + 90;
+      let diff = ((want-angle+540)%360)-180;
+      angle += diff*Math.min(1, dt/220);
+      const step = speed*boost*dt/1000;
+      if(dist < step){
+        x = tgt.x; y = tgt.y;
+        phase='idle'; wait = 900+Math.random()*1800; boost=1;
+        tank.classList.remove('moving');
+        if(Math.random()<0.35){ fire(angle); }          // victory shot on arrival
+      } else {
+        x += Math.sin(angle*Math.PI/180)*step;
+        y += -Math.cos(angle*Math.PI/180)*step;
+      }
+    }
+    tank.style.transform = `translate(${x-20}px,${y-20}px) rotate(${angle}deg)`;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // poke the tank → it complains, hops, shoots
+  body.addEventListener('click', e=>{
+    e.stopPropagation();
+    body.classList.remove('hop'); void body.offsetWidth; body.classList.add('hop');
+    const q = (I18N[LANG]['tank.q']||[]);
+    sayIt(q[Math.floor(Math.random()*q.length)]);
+    fire(angle);
+  });
+  // cursor gets too close → tank flees (sometimes grumbling)
+  addEventListener('mousemove', e=>{
+    if(Math.hypot(e.clientX-x, e.clientY-y) < 85){
+      if(phase==='idle'){
+        const q = (I18N[LANG]['tank.q']||[]);
+        if(Math.random()<0.3) sayIt(q[Math.floor(Math.random()*q.length)]);
+        const away = { x: x + (x-e.clientX)*2.2, y: y + (y-e.clientY)*2.2 };
+        tgt = { x: Math.max(30,Math.min(innerWidth-30, away.x)),
+                y: Math.max(90,Math.min(innerHeight-50, away.y)) };
+        phase='move'; boost=2.6; tank.classList.add('moving');
+      }
+    }
+  });
+})();
+
 let saved='en'; try{ saved = localStorage.getItem('ctp-lang')||'en'; }catch(e){}
 setLang(saved);
 </script>
 
 <div id="toast"></div>
+
+<div id="tank" aria-hidden="true" title="patrol tank #001">
+  <div class="tank-say" id="tankSay"></div>
+  <div class="tank-body" id="tankBody">
+    <svg viewBox="0 0 24 26" width="100%" height="100%">
+      <rect x="11" y="1" width="2.4" height="7" fill="#e3b341"/>
+      <rect x="8.6" y="7" width="6.8" height="6" rx="1" fill="#f2cc60" stroke="#8b6914" stroke-width="0.6"/>
+      <rect x="6" y="12.5" width="12" height="7" rx="1" fill="#e3b341" stroke="#8b6914" stroke-width="0.6"/>
+      <rect x="3.6" y="11.5" width="3.4" height="9.5" rx="1.2" fill="#57606a"/>
+      <rect x="17" y="11.5" width="3.4" height="9.5" rx="1.2" fill="#57606a"/>
+      <rect x="3.6" y="13.2" width="3.4" height="0.9" fill="#3d444d"/>
+      <rect x="3.6" y="15.8" width="3.4" height="0.9" fill="#3d444d"/>
+      <rect x="3.6" y="18.4" width="3.4" height="0.9" fill="#3d444d"/>
+      <rect x="17" y="13.2" width="3.4" height="0.9" fill="#3d444d"/>
+      <rect x="17" y="15.8" width="3.4" height="0.9" fill="#3d444d"/>
+      <rect x="17" y="18.4" width="3.4" height="0.9" fill="#3d444d"/>
+    </svg>
+  </div>
+</div>
 
 </body>
 </html>
