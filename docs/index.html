@@ -77,9 +77,52 @@
 
   .tabs{border:1px solid var(--border);border-radius:12px;overflow:hidden}
   .tab-h{display:flex;background:var(--bg2);border-bottom:1px solid var(--border)}
-  .tab-h div{padding:11px 20px;font-size:13.5px;color:var(--muted);border-right:1px solid var(--border)}
+  .tab-h div{padding:11px 20px;font-size:13.5px;color:var(--muted);border-right:1px solid var(--border);cursor:pointer;user-select:none}
+  .tab-h div:hover{color:var(--text)}
   .tab-h div.on{color:var(--text);background:var(--bg);box-shadow:inset 0 -2px 0 var(--accent)}
   .tabs pre{border-radius:0}
+  .tab-body{display:none}
+  .tab-body.on{display:block}
+
+  /* typewriter cursor */
+  .cur{display:inline-block;width:8px;background:var(--accent);color:var(--accent);animation:blink 1s steps(1) infinite;margin-left:2px}
+  @keyframes blink{50%{opacity:0}}
+
+  /* clickable demo bits */
+  .ln{cursor:pointer;padding:0 6px 0 2px;border-radius:4px;position:relative}
+  .ln:hover{color:var(--warn)}
+  .ln.bp{color:#f85149}
+  .ln.bp::before{content:"●";margin-right:4px;animation:blink 1s steps(1) infinite}
+  .pn{cursor:pointer;border-bottom:1px dashed var(--pink)}
+  .pn:hover{color:#ff9ecb}
+
+  /* toast */
+  #toast{position:fixed;right:22px;bottom:22px;max-width:340px;background:var(--bg2);border:1px solid var(--accent);
+    border-radius:10px;padding:12px 16px;font-size:13px;box-shadow:0 8px 30px rgba(0,0,0,.5);
+    opacity:0;transform:translateY(12px);transition:.3s;pointer-events:none;z-index:99}
+  #toast.show{opacity:1;transform:none}
+
+  /* relay theater */
+  .relay{margin-top:40px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:26px 22px 18px}
+  .relay h3{font-size:16px;margin-bottom:4px}
+  .relay .sub{font-size:12.5px;color:var(--muted);margin-bottom:26px}
+  .relay-stage{position:relative;display:flex;justify-content:space-between;align-items:flex-end;padding:0 30px;min-height:130px}
+  .relay-node{position:relative;text-align:center;width:30%;transition:.3s;opacity:.45}
+  .relay-node.active{opacity:1}
+  .relay-face{font-size:34px;line-height:1;transition:.3s}
+  .relay-node.active .relay-face{transform:translateY(-10px) scale(1.15)}
+  .relay-name{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px}
+  .relay-bubble{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) scale(.7);
+    background:#0a0d12;border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-size:12px;
+    white-space:nowrap;opacity:0;transition:.3s;pointer-events:none}
+  .relay-node.active .relay-bubble{opacity:1;transform:translateX(-50%) scale(1)}
+  .relay-bubble::after{content:"";position:absolute;top:100%;left:50%;margin-left:-5px;
+    border:5px solid transparent;border-top-color:var(--border)}
+  .relay-box{position:absolute;bottom:6px;left:0;font-size:22px;transition:left .7s cubic-bezier(.68,-0.55,.27,1.55);
+    filter:drop-shadow(0 4px 8px rgba(63,185,80,.35));z-index:2}
+  .relay-node.active{z-index:3}
+  .relay-status{margin-top:18px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);min-height:18px}
+  .relay-status .ok{color:var(--accent)}
 
   footer{padding:44px 0 56px;text-align:center;color:var(--muted);font-size:13.5px}
   footer .links{margin-bottom:14px;display:flex;gap:26px;justify-content:center;flex-wrap:wrap}
@@ -117,7 +160,7 @@
     <h1 data-i18n="hero.h1">Code Trace Plus</h1>
     <div class="sub-en" data-i18n="hero.sub">reads code, not recites answers</div>
     <p class="tagline" data-i18n="hero.tagline">Turn source-code call chains into a <b>reading script</b> you click through, step by step, in IDEA / VS Code.</p>
-    <div class="cmd"><span class="d">$</span> npx skills add <span class="g">hughedward/codetrace-plus-skills</span></div>
+    <div class="cmd"><span class="d">$</span> <span id="ty1"></span><span id="ty2" style="color:var(--accent)"></span><span class="cur">▌</span></div>
     <div class="install-note" data-i18n="hero.note">Works with Claude Code / Cursor / Codex / Copilot and more</div>
   </div>
 </header>
@@ -145,14 +188,15 @@
       <div class="demo-bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>trace/redisson-lock-renewal.md</span></div>
 <pre><span class="cmt">#### ↓016、HashedWheelTimer.java:698 —— </span><span class="cmt" data-i18n="demo.c0">the line where we jump back from Netty into Redisson</span>
 
-<span class="ln">698:</span>     <span class="kw">public void</span> expire() {
-<span class="ln">705:</span>         timer.taskExecutor.<span class="kw">execute</span>(<span class="kw">this</span>);
+<span class="ln" data-line="698">698:</span>     <span class="kw">public void</span> expire() {
+<span class="ln" data-line="705">705:</span>         timer.taskExecutor.<span class="kw">execute</span>(<span class="kw">this</span>);
 <span class="ln">   </span>         <span class="cmt" data-i18n="demo.c1">// ↑ not calling task directly! hands `this` to taskExecutor, which runs it on the same thread</span>
-<span class="ln">715:</span>     <span class="kw">public void</span> run() {
-<span class="ln">717:</span>             task.<span class="kw">run</span>(<span class="kw">this</span>);   <span class="pn">p0013</span><span class="cmt" data-i18n="demo.c2">: ★ task is the LockTask passed out at </span><span class="pn">p0009 (011)</span>
+<span class="ln" data-line="715">715:</span>     <span class="kw">public void</span> run() {
+<span class="ln" data-line="717">717:</span>             task.<span class="kw">run</span>(<span class="kw">this</span>);   <span class="pn" data-ref="011">p0013</span><span class="cmt" data-i18n="demo.c2">: ★ task is the LockTask passed out at </span><span class="pn" data-ref="011">p0009 (011)</span>
 <span class="ln">   </span>                             <span class="click" data-i18n="demo.c3">【click】task.run → ctrl+alt+B → RenewalTask.java:170</span>
 
-<span class="cmt" data-i18n="demo.c4">Proof: breakpoint at :170 fires within 10s of locking — thread name = redisson-timer-1-1</span></pre>
+<span class="cmt" data-i18n="demo.c4">Proof: breakpoint at :170 fires within 10s of locking — thread name = redisson-timer-1-1</span>
+<span class="cmt" data-i18n="demo.hint">psst — the line numbers above are clickable. Try setting a breakpoint 🔴</span></pre>
     </div>
     <div class="flow">
 <pre><b data-i18n="flow.you">Your thread:</b> 001 lock() → 005/006 Lua lock → 010 register → 011 newTimeout(this,10s) <span class="arrow">─┐</span> <span data-i18n="flow.back">return to business</span>
@@ -163,6 +207,29 @@
 <b>redisson-netty:</b> 021 complete → whenComplete → schedule() <span class="arrow">┌───┘</span>
         <span class="arrow">▲</span>   <span data-i18n="flow.loop">every 10s, until unlock stops the clock</span>   <span class="arrow">│</span>
         <span class="arrow">└──────────────────────────────────────┘</span></pre>
+    </div>
+    <div class="relay">
+      <h3 data-i18n="relay.title">🎭 Live re-enactment: the rocky life of one `this`</h3>
+      <div class="sub" data-i18n="relay.sub">Three threads. One parcel. Infinite loop. (This is literally what the skill traces.)</div>
+      <div class="relay-stage" id="relayStage">
+        <div class="relay-node" data-r="0">
+          <div class="relay-bubble"></div>
+          <div class="relay-face">🧑‍💻</div>
+          <div class="relay-name">your-thread</div>
+        </div>
+        <div class="relay-node" data-r="1">
+          <div class="relay-bubble"></div>
+          <div class="relay-face">⏰</div>
+          <div class="relay-name">redisson-timer-1-1</div>
+        </div>
+        <div class="relay-node" data-r="2">
+          <div class="relay-bubble"></div>
+          <div class="relay-face">📡</div>
+          <div class="relay-name">redisson-netty</div>
+        </div>
+        <div class="relay-box" id="relayBox">📦</div>
+      </div>
+      <div class="relay-status" id="relayStatus"></div>
     </div>
     <p class="h2sub" style="margin-top:18px" data-i18n="demo.more">→ Full sample: skills/codetrace-plus/references/example-redisson.md in the repo (21 steps + 9 Q&amp;As; scripts are written in Chinese — the skill's native output).</p>
   </div>
@@ -185,17 +252,21 @@
     <h2 data-i18n="inst.h2">Install</h2>
     <p class="h2sub" data-i18n="inst.sub">Pick one of three ways. The skill folder must stay named <code>codetrace-plus</code>.</p>
     <div class="tabs">
-      <div class="tab-h"><div class="on" data-i18n="inst.t1">skills CLI</div><div data-i18n="inst.t2">Manual · global</div><div data-i18n="inst.t3">Manual · project</div></div>
-<pre><span class="cmt" data-i18n="inst.c1"># recommended: one command once the repo is public</span>
-<span class="d" style="color:var(--muted)">$</span> npx skills add <span class="click">hughedward/codetrace-plus-skills</span>
+      <div class="tab-h">
+        <div class="on" data-tab="0" data-i18n="inst.t1">skills CLI</div>
+        <div data-tab="1" data-i18n="inst.t2">Manual · global</div>
+        <div data-tab="2" data-i18n="inst.t3">Manual · project</div>
+      </div>
+      <div class="tab-body on"><pre><span class="cmt" data-i18n="inst.c1"># recommended: one command once the repo is public</span>
+<span style="color:var(--muted)">$</span> npx skills add <span class="click">hughedward/codetrace-plus-skills</span>
 
-<span class="cmt" data-i18n="inst.c2"># or install globally (available in all projects)</span>
-<span class="d" style="color:var(--muted)">$</span> mkdir -p ~/.claude/skills
-<span class="d" style="color:var(--muted)">$</span> cp -r skills/codetrace-plus ~/.claude/skills/
-
-<span class="cmt" data-i18n="inst.c3"># or install into a single project</span>
-<span class="d" style="color:var(--muted)">$</span> mkdir -p .claude/skills
-<span class="d" style="color:var(--muted)">$</span> cp -r skills/codetrace-plus .claude/skills/</pre>
+<span class="cmt" data-i18n="inst.c4"># works with Claude Code / Cursor / Codex / Copilot / ...</span></pre></div>
+      <div class="tab-body"><pre><span class="cmt" data-i18n="inst.c2"># or install globally (available in all projects)</span>
+<span style="color:var(--muted)">$</span> mkdir -p ~/.claude/skills
+<span style="color:var(--muted)">$</span> cp -r skills/codetrace-plus ~/.claude/skills/</pre></div>
+      <div class="tab-body"><pre><span class="cmt" data-i18n="inst.c3"># or install into a single project</span>
+<span style="color:var(--muted)">$</span> mkdir -p .claude/skills
+<span style="color:var(--muted)">$</span> cp -r skills/codetrace-plus .claude/skills/</pre></div>
     </div>
   </div>
 </section>
@@ -244,8 +315,20 @@ en: {
   "inst.c1":"# recommended: one command once the repo is public",
   "inst.c2":"# or install globally (available in all projects)",
   "inst.c3":"# or install into a single project",
+  "inst.c4":"# works with Claude Code / Cursor / Codex / Copilot / ...",
   "foot.sample":"Full sample (21 steps)",
-  "foot.line":"MIT License · Code Trace Plus v0.1.0 · golden sample based on Redisson 4.7.0 + Netty 4.2.16.Final"
+  "foot.line":"MIT License · Code Trace Plus v0.1.0 · golden sample based on Redisson 4.7.0 + Netty 4.2.16.Final",
+  "demo.hint":"psst — the line numbers above are clickable. Try setting a breakpoint 🔴",
+  "toast.bp":"🔴 Breakpoint set at :{line} — the thread WILL stop here. See you in 10s.",
+  "toast.ref":"← back-reference: that's where `this` left the building (step 011)",
+  "relay.title":"🎭 Live re-enactment: the rocky life of one `this`",
+  "relay.sub":"Three threads. One parcel. Infinite loop. (This is literally what the skill traces.)",
+  "relay.l0":"📦 `this` handed to the time wheel. Off to deduct stock 🛒",
+  "relay.l1":"⏰ ding — 10s up, my turn to call run()",
+  "relay.l2":"📡 renewal done, complete() received — next alarm's on me ⏭️",
+  "relay.l3":"wait, ME again?? — yes. that's the loop 😂",
+  "relay.done":"✓ loop closed — every 10s, until unlock stops the clock",
+  "relay.pass":"pass {n} / ∞"
 },
 zh: {
   "nav.features":"特性","nav.demo":"剧本示例","nav.how":"工作方式","nav.install":"安装",
@@ -278,8 +361,20 @@ zh: {
   "inst.c1":"# 推荐：一条命令安装",
   "inst.c2":"# 或安装到全局（所有项目可用）",
   "inst.c3":"# 或只装到当前项目",
+  "inst.c4":"# 兼容 Claude Code / Cursor / Codex / Copilot 等",
   "foot.sample":"完整示例（21 步）",
-  "foot.line":"MIT License · Code Trace Plus（代码追踪小能手）v0.1.0 · golden sample 基于 Redisson 4.7.0 + Netty 4.2.16.Final"
+  "foot.line":"MIT License · Code Trace Plus（代码追踪小能手）v0.1.0 · golden sample 基于 Redisson 4.7.0 + Netty 4.2.16.Final",
+  "demo.hint":"悄悄说：上面的行号可以点，试试打个断点 🔴",
+  "toast.bp":"🔴 断点已打在 :{line}——线程必停在这，10 秒后见。",
+  "toast.ref":"← 回指：this 就是从 011 步传出去的",
+  "relay.title":"🎭 实景重演：一个 this 的坎坷一生",
+  "relay.sub":"三个线程，一个包裹，无限循环。（这就是本 skill 追的东西，没开玩笑。）",
+  "relay.l0":"📦 this 交给时间轮了，我先下班扣库存 🛒",
+  "relay.l1":"⏰ 叮——10 秒到，该我调 run() 了",
+  "relay.l2":"📡 续期完成收到 complete，下一个闹钟我包了 ⏭️",
+  "relay.l3":"等等，怎么又轮到我？？——对，这就是闭环 😂",
+  "relay.done":"✓ loop closed —— 每 10 秒一轮，直到 unlock 停表",
+  "relay.pass":"第 {n} 圈 / ∞"
 },
 ja: {
   "nav.features":"特徴","nav.demo":"スクリプト例","nav.how":"仕組み","nav.install":"インストール",
@@ -312,23 +407,106 @@ ja: {
   "inst.c1":"# 推奨：コマンド一発でインストール",
   "inst.c2":"# またはグローバルにインストール（全プロジェクトで利用可能）",
   "inst.c3":"# または単一プロジェクトにインストール",
+  "inst.c4":"# Claude Code / Cursor / Codex / Copilot などに対応",
   "foot.sample":"完全版サンプル（21 ステップ）",
-  "foot.line":"MIT License · Code Trace Plus v0.1.0 · golden sample は Redisson 4.7.0 + Netty 4.2.16.Final ベース"
+  "foot.line":"MIT License · Code Trace Plus v0.1.0 · golden sample は Redisson 4.7.0 + Netty 4.2.16.Final ベース",
+  "demo.hint":"ちなみに——上の行番号はクリックできます。ブレークポイントをどうぞ 🔴",
+  "toast.bp":"🔴 :{line} にブレークポイント設置——スレッドはここで停止。10秒後に会いましょう。",
+  "toast.ref":"← 逆参照：this は 011 ステップから旅立った",
+  "relay.title":"🎭 実況再現：一つの this の波乱の一生",
+  "relay.sub":"3つのスレッド、1つの小包、無限ループ。（これがまさにこの skill が追うものです。）",
+  "relay.l0":"📦 this はタイムホイールに渡した。在庫引き当ててくる 🛒",
+  "relay.l1":"⏰ チン——10秒経過、run() を呼ぶ番だ",
+  "relay.l2":"📡 更新完了、complete() 受信。次のアラームは任せろ ⏭️",
+  "relay.l3":"え、また私？？——そう、それがループ 😂",
+  "relay.done":"✓ loop closed ——10秒ごとに一周、unlock で停止",
+  "relay.pass":"{n} 周目 / ∞"
 }
 };
+let LANG='en';
 function setLang(l){
+  LANG=l;
   document.documentElement.lang = l==='zh'?'zh-CN':'ja'===l?'ja':'en';
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const k = el.getAttribute('data-i18n');
     if(I18N[l][k] !== undefined) el.innerHTML = I18N[l][k];
   });
   document.querySelectorAll('.lang button').forEach(b=>b.classList.toggle('on', b.dataset.lang===l));
+  renderRelay();
   try{ localStorage.setItem('ctp-lang', l); }catch(e){}
 }
 document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+
+/* ---- toast ---- */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.innerHTML=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+/* ---- install tabs ---- */
+document.querySelectorAll('.tab-h div').forEach(h=>h.addEventListener('click',()=>{
+  document.querySelectorAll('.tab-h div').forEach(x=>x.classList.toggle('on',x===h));
+  const i=h.dataset.tab;
+  document.querySelectorAll('.tab-body').forEach((b,j)=>b.classList.toggle('on',j==i));
+}));
+
+/* ---- breakpoint easter egg ---- */
+document.querySelectorAll('.ln[data-line]').forEach(l=>l.addEventListener('click',()=>{
+  l.classList.toggle('bp');
+  if(l.classList.contains('bp')){
+    showToast(I18N[LANG]['toast.bp'].replace('{line}', l.dataset.line));
+  }
+}));
+
+/* ---- pNNNN back-ref easter egg ---- */
+document.querySelectorAll('.pn').forEach(p=>p.addEventListener('click',()=>showToast(I18N[LANG]['toast.ref'])));
+
+/* ---- hero typewriter ---- */
+(function(){
+  const t1=document.getElementById('ty1'), t2=document.getElementById('ty2');
+  const a='npx skills add ', b='hughedward/codetrace-plus-skills';
+  let i=0,j=0;
+  (function ta(){ if(i<a.length){ t1.textContent+=a[i++]; setTimeout(ta,60); } else { tb(); } })();
+  function tb(){ if(j<b.length){ t2.textContent+=b[j++]; setTimeout(tb,45); } }
+})();
+
+/* ---- relay theater: the rocky life of one `this` ---- */
+const RELAY_SEQ=[0,1,2,0];
+let rIdx=0, rPass=1;
+function renderRelay(){
+  const nodes=document.querySelectorAll('.relay-node');
+  const box=document.getElementById('relayBox');
+  const status=document.getElementById('relayStatus');
+  if(!nodes.length||!box) return;
+  const beat=rIdx%4, active=RELAY_SEQ[beat];
+  nodes.forEach(n=>n.classList.toggle('active', +n.dataset.r===active));
+  const bubble=nodes[active].querySelector('.relay-bubble');
+  bubble.innerHTML=I18N[LANG]['relay.l'+beat];
+  box.style.left=(nodes[active].offsetLeft + nodes[active].offsetWidth/2 - 11)+'px';
+  if(status){
+    if(beat===3){ status.innerHTML='<span class="ok">'+I18N[LANG]['relay.done']+'</span>'; }
+    else{ status.textContent=I18N[LANG]['relay.pass'].replace('{n}', rPass); }
+  }
+}
+setInterval(()=>{
+  rIdx++;
+  if(rIdx%4===0) rPass++;
+  renderRelay();
+},2600);
+
+/* ---- console easter egg ---- */
+console.log('%c Code Trace Plus ','background:#3fb950;color:#0d1117;font-weight:bold;font-size:15px;padding:4px 8px;border-radius:4px');
+console.log("you opened the console. RESPECT 👏  we trace code so you don't have to memorize it.");
+console.log('%cnpx skills add hughedward/codetrace-plus-skills','color:#58a6ff;font-size:13px');
+
 let saved='en'; try{ saved = localStorage.getItem('ctp-lang')||'en'; }catch(e){}
 setLang(saved);
 </script>
+
+<div id="toast"></div>
 
 </body>
 </html>
