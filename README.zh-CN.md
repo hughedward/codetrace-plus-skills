@@ -4,7 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-3fb950.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.1.0-58a6ff.svg)](CHANGELOG.md)
 
-[English](README.md) | **简体中文** | [日本語](README.ja.md)
+[English](README.md) | **简体中文** | [日本語](README.ja.md) 
+<img width="1511" height="574" alt="image" src="https://github.com/user-attachments/assets/8bb67cc9-0a7c-4133-b098-12393d804572" />
+
 
 **把源码调用链，变成你能在 IDEA / VS Code 里一步步跟着点击的「阅读剧本」。**
 
