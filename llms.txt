@@ -18,7 +18,7 @@ README is available in three languages: [English](README.md) (default), [简体�
 ## Reference
 
 - [Format spec with do/don't examples](skills/codetrace-plus/references/format.md): heading format (`#### ↓NNN、File.java:line desc`), inline click annotations (`// pNNNN：【点击】method 跳转 本文件:152`), non-linear provenance blocks, closing trio (summary diagram / side-quest list / interview QA).
-- [Golden sample: 21-step Redisson watchdog trace](skills/codetrace-plus/references/example-redisson.md): from `redissonLock.lock()` (IndexController.java:42) through the locking Lua, global LockTask registration, Netty HashedWheelTimer enqueue/patrol/expiry (cross-library, Netty 4.2.16.Final sources), renewal Lua, and the `promise.complete → whenComplete → schedule()` loop closure — with 9 interview Q&As.
+- [Golden sample: 22-step Redisson watchdog trace](skills/codetrace-plus/references/example-redisson.md): from `redissonLock.lock()` (IndexController.java:42) through the locking Lua, global LockTask registration, Netty HashedWheelTimer enqueue/patrol/expiry (cross-library, Netty 4.2.16.Final sources), renewal Lua, and the `promise.complete → whenComplete → schedule()` loop closure — with 9 interview Q&As.
 
 ## Docs
 

@@ -31,5 +31,5 @@
 
 ### 附带资产
 
-- `references/example-redisson.md`：21 步 golden sample（Redisson 4.7.0 + Netty 4.2.16.Final，从 `redissonLock.lock()` 到看门狗批量续期闭环，跨 Netty 追踪，9 条 QA）
+- `references/example-redisson.md`：22 步 golden sample（Redisson 4.7.0 + Netty 4.2.16.Final，从 `redissonLock.lock()` 到看门狗批量续期闭环，跨 Netty 追踪，9 条 QA）
 - `references/format.md`：格式细则与正反例

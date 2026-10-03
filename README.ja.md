@@ -79,7 +79,7 @@ Code Trace Plus はこの 3 つを契約で解決します：
 
 非線形ジャンプにはコード下に来歴ブロック（来歴チェーン + 正体 + トリガーチェーン + ブレークポイント検証）が付きます：*「:170 にブレークポイントを置くと、ロック後 10 秒以内に停止、スレッド名 = redisson-timer-1-1」*
 
-Golden sample——`redissonLock.lock()` からウォッチドッグ更新ループまで 21 ステップ、Redisson 4.7.0 を横断し **Netty 4.2.16 ソースにまで踏み込み**、ループを閉じる——は [`skills/codetrace-plus/references/example-redisson.md`](skills/codetrace-plus/references/example-redisson.md)（末尾に面接 Q&A 9 問、中国語）にあります。
+Golden sample——`redissonLock.lock()` からウォッチドッグ更新ループまで 22 ステップ、Redisson 4.7.0 を横断し **Netty 4.2.16 ソースにまで踏み込み**、ループを閉じる——は [`skills/codetrace-plus/references/example-redisson.md`](skills/codetrace-plus/references/example-redisson.md)（末尾に面接 Q&A 9 問、中国語）にあります。
 
 ## AI Agent 向け
 

@@ -79,7 +79,7 @@ Code Trace Plus 用契约解决这三个问题：
 
 非线性跳转在代码块下方带来历块（来历链 + 身份 + 触发链 + 断点验证）：*"在 :170 打断点，加锁后 10 秒内必停，线程名 = redisson-timer-1-1。"*
 
-Golden sample——从 `redissonLock.lock()` 到看门狗续期循环共 21 步，横跨 Redisson 4.7.0 **并追进 Netty 4.2.16 源码**、最终闭环——见 [`skills/codetrace-plus/references/example-redisson.md`](skills/codetrace-plus/references/example-redisson.md)（结尾含 9 条面试问答）。
+Golden sample——从 `redissonLock.lock()` 到看门狗续期循环共 22 步，横跨 Redisson 4.7.0 **并追进 Netty 4.2.16 源码**、最终闭环——见 [`skills/codetrace-plus/references/example-redisson.md`](skills/codetrace-plus/references/example-redisson.md)（结尾含 9 条面试问答）。
 
 ## 给 AI Agent
 

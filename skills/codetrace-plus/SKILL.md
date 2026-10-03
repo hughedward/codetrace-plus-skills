@@ -64,5 +64,5 @@ description: Code Trace Plus（代码追踪小能手）——追踪源码调用�
    - 面试问答（QA）：从追踪主线里提炼 6~9 个面试官真会问的问题（如"指定 leaseTime 还有看门狗吗""续期前为什么 hexists""哪个线程在续期"），每条答案 2~4 句话并回引编号/行号，不引入主线没追过的内容
 5. **落盘**：中文写入 `trace/<主题>.md`。
 
-完整 golden sample（Redisson 看门狗 + Netty 时间轮跨库追踪，21 步闭环）：`references/example-redisson.md`
+完整 golden sample（Redisson 看门狗 + Netty 时间轮跨库追踪，22 步闭环）：`references/example-redisson.md`
 格式细则与正反例：`references/format.md`

@@ -78,7 +78,7 @@ Every step is: a heading with real `file:line` → a code block → the next hop
 
 Non-linear hops carry a provenance block under the code (origin chain + identity + trigger chain + breakpoint proof): *"breakpoint at :170 fires within 10s of locking, thread name = redisson-timer-1-1."*
 
-The golden sample — 21 steps from `redissonLock.lock()` to the watchdog renewal loop, across Redisson 4.7.0 **and into Netty 4.2.16 source**, closing the loop — lives at [`skills/codetrace-plus/references/example-redisson.md`](skills/codetrace-plus/references/example-redisson.md) (ends with 9 interview Q&As, in Chinese).
+The golden sample — 22 steps from `redissonLock.lock()` to the watchdog renewal loop, across Redisson 4.7.0 **and into Netty 4.2.16 source**, closing the loop — lives at [`skills/codetrace-plus/references/example-redisson.md`](skills/codetrace-plus/references/example-redisson.md) (ends with 9 interview Q&As, in Chinese).
 
 ## For AI Agents
 

@@ -252,7 +252,7 @@
 171:     if (executor.getServiceManager().isShuttingDown()) {
 172:         return;
 175:     CompletionStage<Void> future = execute();          // p0014：【点击】execute 跳转 本文件:78
-176:     future.whenComplete((result, e) -> {               // ← 谁来调这个回调？见 021（不是白等，能追到代码）
+176:     future.whenComplete((result, e) -> {               // ← 谁来调这个回调？见 022（不是白等，能追到代码）
 183:         schedule();   // ← 再上闹钟 → 回到 011（p0008）：闭环的后半段
 184:     });
 185: }
@@ -306,32 +306,68 @@
 93:     "return result;",
 94:     new ArrayList<>(keys),   // ← KEYS = 登记簿里的锁名们
 95:     args.toArray());         // ← ARGV[1]=30000，ARGV[2..]=各锁持有者标识
+                                  // p0015：【点击】syncedEval 跳转 CommandAsyncService.java:1080（见 021）
 ```
 
 （续期前必须 hexists 校验——锁被误删后别人加了新锁，绝不能把**别人的锁**续活；返回 0 的锁在回调里注销，本文件:97-102。）
 
-Lua 发出后当前线程**不阻塞等待**，run() 返回。剩下的疑问：**017 :176 的 whenComplete 回调，到底谁在哪个线程调？**——继续追，不断链：
+Lua 发出后当前线程**不阻塞等待**，run() 返回。020 → 022 之间不是一次点击，而是"**命令发出 → 时间流逝 → 响应回来触发预注册的完成链**"——但中间的转发和注册每一跳都能点，不断链：
 
-#### ↓021、RedisExecutor.java:711（org.redisson.command 包）—— 非线性：闭环点，complete → whenComplete → schedule()
+#### ↓021、CommandAsyncService.java:1080（org.redisson.command 包）syncedEval 转发链：一路点到 RedisExecutor.execute()
 
 ```java
-711: protected void handleSuccess(CompletableFuture<R> promise, CompletableFuture<RedisConnection> connectionFuture, R res) {
-713:             promise.complete(res);   // ★ future 在这被完成——当前线程是 Redis 连接的 Netty eventLoop（redisson-netty-x）
+1080: public <T> RFuture<T> syncedEval(String key, ...) {
+1081:     return syncedEval(getServiceManager().getCfg().getSlavesSyncTimeout(), ...);  // ← 转调私有 :1095
+1095: private <T> RFuture<T> syncedEval(long timeout, ...) {
+1109:     if (单机配置 /* isSingleConfig()，你的场景 */) {
+1110:         return evalWriteNoRetryAsync(key, ...);   // ← 【点击】evalWriteNoRetryAsync 跳转 本文件:489
+    .....
+489:  public <T, R> RFuture<R> evalWriteNoRetryAsync(String key, ...) {
+491:     return evalAsync(getNodeSource(key), false, ...);   // ← 【点击】evalAsync 跳转 本文件:578
+    .....
+578:  public <T, R> RFuture<R> evalAsync(...) {
+589:     CompletableFuture<R> promise = new CompletableFuture<>();   // ← 将来返回给 020 那个 f 的就是它
+603:     RedisExecutor<T, R> executor = new RedisExecutor(readOnlyMode, nodeSource, codec, cmd,
+604:             args.toArray(), promise, false, ...);   // ← 把 promise 交给 executor，由它负责完成
+604:     executor.execute();   // p0016：【点击】execute 跳转 RedisExecutor.java:122（见 022）
+```
+
+（四跳纯转发，终点是 RedisExecutor：020 拿到的 `f` 和 :589 这个 promise 是同一个对象——"谁来完成它"的答案在下一步。）
+
+#### ↓022、RedisExecutor.java:122（org.redisson.command 包）—— 非线性：闭环点，complete → whenComplete → schedule()
+
+```java
+122: public void execute() {
+141:     CompletableFuture<R> attemptPromise = new CompletableFuture<>();
+142:     CompletableFuture<RedisConnection> connectionFuture = getConnection(attemptPromise);
+    .....
+201:     sendCommand(attemptPromise, connection);   // ← 把 EVALSHA 写进 Redis 连接（异步写出，不等响应）
+    .....
+215:     attemptPromise.whenComplete((r, e) -> {    // ← ★ 预注册完成链：响应回来时才执行（见下来历链）
+216:         checkAttemptPromise(attemptPromise, connectionFuture);
+217:     });
+    .....
+711: protected void handleSuccess(CompletableFuture<R> promise, ...) {
+713:     promise.complete(res);   // ★ future 在这被完成——当前线程是 Redis 连接的 Netty eventLoop（redisson-netty-x）
     .....
 ```
 
 ```
-来历链：syncedEval 发出 Lua 后返回的 future，在 Redis 响应回到连接时被 complete：
-Redis 连接的 Netty eventLoop 线程（redisson-netty-x）读到响应、解码后 complete attemptPromise
-→ attemptPromise.whenComplete（RedisExecutor.java:215）→ checkAttemptPromise（:574）
-→ handleResult（:673）→ handleSuccess（:711）→ 上面那行。
+完整来历链（每一跳都能点）：021 :604 executor.execute() → 本方法
+→ :201 sendCommand 异步发出（当前线程不等待，run() 已返回）
+→ 【时间流逝：Lua 在 Redis 执行，响应回到连接】
+→ Redis 连接的 Netty eventLoop 线程（redisson-netty-x）读到响应、解码后 complete attemptPromise（:141 那个）
+→ :215 预注册的 whenComplete 同步触发 → :216 checkAttemptPromise（:574）
+→ handleResult（:673）→ handleSuccess（:711）→ :713 complete 了 promise
+→ 而 promise 正是 021 :589 交给 executor 的那个，也就是 020 的 f、017 :176 whenComplete 等的那个。
+验证：在 :713 打断点，续期响应回来时必停，线程名 = redisson-netty-x。
 ```
 
 JDK `CompletableFuture.whenComplete` 的语义：**完成时，回调同步在调用 complete() 的线程里执行**。所以 017 :176 的 whenComplete → :183 `schedule()` 跑在 redisson-netty 线程——再上 10 秒的闹钟，10 秒后 redisson-timer-1-1 再次到期，一切重演。
 
 > 验证：在 RenewalTask.java:183 `schedule()` 打断点，续期完成后停下的线程名是 redisson-netty-x，不是 redisson-timer。
 
-**闭环达成：011 →（Netty 五步）→ 017 → 020 → 021 → 回到 011。**
+**闭环达成：011 →（Netty 五步）→ 017 → 020 → 021 → 022 → 回到 011。**
 
 ---
 
@@ -349,13 +385,14 @@ redisson-timer-1-1（Netty 时间轮 Worker）：│ 10 秒（每 50~100ms 巡�
 → 013 :457 入队 → 014 Worker.run() 巡检 ─┘
 → 015 expireTimeouts → expire() → 016 task.run(this)
 → 017 RenewalTask.run() → 018 execute() → 019 renew/buildChunk
-→ 020 Lua续期(hexists+pexpire 重置30s) → 发出后不等待，run() 返回
+→ 020 Lua续期(hexists+pexpire 重置30s) → 021 syncedEval转发链 → RedisExecutor.execute()
+  → :201 发出后不等待，run() 返回；:215 预注册完成链
                                    │ Redis 响应回到连接
 redisson-netty（Redis 连接的 eventLoop 线程）：│
-→ 021 handleSuccess → promise.complete(...) ─┘
+→ 022 complete attemptPromise → :574→:673→:711 handleSuccess → promise.complete(...) ─┘
 → whenComplete 同步执行 → schedule()（=011 再上 10s 闹钟）
-        ▲                                                      │
-        └──────────── 每 10 秒循环一轮，直到 unlock 停表 ────────┘
+        ▲                                                              │
+        └──────────── 每 10 秒循环一轮，直到 unlock 停表 ──────────────┘
 ```
 
 #### 支线速览（面试追问才展开）
@@ -389,7 +426,7 @@ A：锁的 Redis 结构是 hash：字段 = `UUID:threadId`，value = 重入计�
 A：003 的 :111 先订阅"已解锁"频道，然后 while 自旋：再抢一次，没抢到就在 Semaphore 上 `tryAcquire(ttl)` 睡**最多持有者剩余的 ttl 毫秒**（:131），等不到自动醒回 :122 再抢；持有者 unlock 时 publish 解锁消息会立刻唤醒它。不会无限等。
 
 **Q8：执行续期的到底是哪个线程？**
-A：两段：到期回调（017 run()）跑在 **redisson-timer-1-1**（Netty 时间轮 Worker 线程，012 :293 起的名字，ImmediateExecutor 同线程执行，见 016）；续期 Lua 的响应回来后，whenComplete 里的 schedule()（017 :183）跑在 **redisson-netty-x**（Redis 连接的 eventLoop，JDK whenComplete 语义：同步在 complete 线程执行，见 021）。两个断点都能亲手验证。
+A：两段：到期回调（017 run()）跑在 **redisson-timer-1-1**（Netty 时间轮 Worker 线程，012 :293 起的名字，ImmediateExecutor 同线程执行，见 016）；续期 Lua 的响应回来后，whenComplete 里的 schedule()（017 :183）跑在 **redisson-netty-x**（Redis 连接的 eventLoop，JDK whenComplete 语义：同步在 complete 线程执行，见 021→022 转发与完成链)。两个断点都能亲手验证。
 
 **Q9：为什么加锁和续期都必须用 Lua？**
 A：加锁 006：`exists 判断 + hincrby + pexpire` 三步必须原子，拆开就是两个客户端都能通过的竞态；续期 020：`hexists 校验 + pexpire` 同理。Redis 单线程执行 Lua 期间不会插入其他命令。
