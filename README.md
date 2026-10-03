@@ -5,6 +5,7 @@
 [![Version](https://img.shields.io/badge/version-0.1.0-58a6ff.svg)](CHANGELOG.md)
 
 **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+<img width="1574" height="575" alt="image" src="https://github.com/user-attachments/assets/2dfc60a9-8f07-4b84-989e-fafdf55e2d26" />
 
 **Turn source-code call chains into "reading scripts" you can click through, step by step, in IDEA / VS Code.**
 
