@@ -8,8 +8,8 @@
 <img width="1511" height="574" alt="image" src="https://github.com/user-attachments/assets/8bb67cc9-0a7c-4133-b098-12393d804572" />
 
 
-**屎山不可怕，可怕的是没人给你地图。**
-**把祖传代码的调用链，变成你能在 IDEA / VS Code 里一步步跟着点击的「阅读剧本」——别猜，追它。**
+**屎山代码看得心烦？试试这个。**
+**它把祖传代码的调用链，变成你能在 IDEA / VS Code 里一步步跟着点击的「阅读剧本」——别猜，追。**
 
 一个**追踪真实源码**的 AI Agent Skill——不是背面试八股，也不是凭印象编讲解。给它一个入口（`redissonLock.lock()`、`orderService.cancel()`、任何你不敢动的方法）或一个问题（"这个屎山到底怎么跑起来的？"），它沿着**真实**代码库逐跳追踪，写一份 markdown 剧本，每一步都是你在 IDE 里能亲手执行的操作：*它说点哪，你就 ctrl+点击哪。*
 

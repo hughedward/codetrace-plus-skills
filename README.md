@@ -7,8 +7,8 @@
 **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 <img width="1574" height="575" alt="image" src="https://github.com/user-attachments/assets/2dfc60a9-8f07-4b84-989e-fafdf55e2d26" />
 
-**Legacy code isn't scary. Not having a map is.**
-**Turn the call chains inside your legacy mountain into "reading scripts" you click through, step by step, in IDEA / VS Code — don't guess, trace.**
+**Sick of staring at legacy code? Try this.**
+**It turns legacy call chains into "reading scripts" you click through, step by step, in IDEA / VS Code — don't guess, trace.**
 
 An AI Agent Skill for **tracing real source code** — not reciting interview lore, not hallucinating explanations from memory. Give it an entry point (`redissonLock.lock()`, `orderService.cancel()`, any method you're afraid to touch) or a question ("how does this legacy mountain even work?"), and it walks the **real** codebase hop by hop, writing a markdown script where every step is an IDE action you can physically perform: *it says click here, you ctrl+click here.*
 
