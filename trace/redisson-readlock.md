@@ -109,6 +109,8 @@ IDEA 操作：ctrl+点击 tryLockInnerAsync 会给出多个候选，选 Redisson
 >
 > **⚠️**：:67 的 `mode == 'write' and hexists(ARGV[3])`——**持有写锁的人可以再加读锁**（锁降级的入口）；纯读之间（mode=='read'）永不互斥。
 
+（**电商例子看 Redis 里到底存了什么**：商品 101，客户端 UUID 简写 `c604`，线程 88/99。`KEYS[1]`=`lock:product:update:101`（你的前缀+商品ID）；`KEYS[2]`=`{lock:product:update:101}:{c604:88}:rwlock_timeout`（`suffixName` 拼接，RedissonObject.java:146-150），`:62` 拼 `':1'` 后即完整沙漏 key。第一次 lock 后：主 hash 两笔 `HSET mode→read`、`HSET c604:88→1` + 整体 30s；外加 `SET ...:rwlock_timeout:1` 独立 30s。线程 99 也来读：hash 加 field `c604:99→1` + 新沙漏 `...:99:rwlock_timeout:1`；线程 88 重入：`HINCRBY c604:88→2` + 新沙漏 `...:88:rwlock_timeout:2`。**为什么两套结构**：Redis 的 hash 不能给单个 field 设 TTL——hash 当登记簿（加锁判定 :67 查它），string key 当每个读者序号的沙漏（unlock :107 按序号 DEL、:116 逐沙漏 Pttl 取 max 收敛主锁；看门狗 ReadLockTask.java:104 逐序号续、:110 任一活着才续主 hash）。）
+
 线索回收：返回 nil → 005 的 thenApply（:195-201）→ 调 p0004 指向的 scheduleExpirationRenewal。
 
 #### ↓007、RedissonReadLock.java:147 —— 非线性②：看门狗登记也被读锁重写了
